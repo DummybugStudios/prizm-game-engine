@@ -1,0 +1,4 @@
+build/
+.vscode/
+*.g3a
+*.bin
