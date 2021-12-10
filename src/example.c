@@ -3,6 +3,7 @@
 #include <fxcg/rtc.h> 
 #include <string.h>
 #include <stdio.h>
+#include "images.h"
 /* Note that a progress bar has the side effect of making the long calculation you are doing to take longer.
  * The reason for this is because the screen needs to be redrawn.
  * Try figuring out an optimal balance between progress bar responsiveness and how many times it is updated.
@@ -47,6 +48,7 @@ void drawRectangle(int x, int y, int sizex, int sizey)
     }
 }
 
+static float uy = 0; 
 void handleMovement(int *x, int *y)
 { 
         if(keyPressed(KEY_PRGM_LEFT))
@@ -54,19 +56,20 @@ void handleMovement(int *x, int *y)
         if(keyPressed(KEY_PRGM_RIGHT))
             *x++; 
         if(keyPressed(KEY_PRGM_UP))
-            *y--; 
+            uy-=0.2; 
         if(keyPressed(KEY_PRGM_DOWN))
-            *y++; 
+            uy+=0.2; 
 }
 
 
 static int lastTick = 0; 
 static int delta = 0;
+// TODO: Decide how to store multiple objects 
 void enableGravity(int *x, int *y)
 {
     // pixels per tick squared
     static const float g = 0.1; 
-    static float u = 0; 
+    static float ux = 0;
     static float realy = -1; 
     if (realy == -1)
     {
@@ -77,23 +80,40 @@ void enableGravity(int *x, int *y)
     int newTick = RTC_GetTicks();
     delta = newTick - lastTick; 
 
-    // TODO: maybe figure out easier way to store this information
     // calculate new position based on u 
-    realy += u*delta;
+    realy += uy*delta;
     if (realy > LCD_HEIGHT_PX)
     {
         // make object bounce when it collides with the bottom of the screen
-        u = -u*0.95;
+        realy = LCD_HEIGHT_PX;
+        uy = -uy*0.95;
+    }
+    else if (realy < 0)
+    { 
+        realy = 0;
+        uy = -uy * 0.95;
     }
     else
     {
         *y = (int)realy;
         // update u according to v = u+at
-        u += g*delta;
+        uy += g*delta;
     }
     lastTick = newTick;
 }
 
+
+void drawSprite() {
+    // width = 100 
+    for (int i = 0; i < spr_Play.width; i++)
+    { 
+        // height = 40
+        for (int j=0;j < spr_Play.height; j++)
+        {
+            vramaddress[i+j*LCD_WIDTH_PX] = spr_Play.image[i+j*100];
+        }
+    }
+}
 
 int main(void){
     Bdisp_EnableColor(1);
@@ -109,8 +129,9 @@ int main(void){
     for(;;){
 
         Bdisp_AllClr_VRAM();
-        int xxx = 10;
-        int yyy = 10; 
+        // int xxx = 10;
+        // int yyy = 10; 
+        drawSprite(); 
         drawRectangle(x,y,20,20);
 
         // char debug[10]; 
@@ -123,6 +144,7 @@ int main(void){
             break;
         }
  
+        handleMovement(&x, &y);
         enableGravity(&x, &y); 
 
         MsgBoxPop();
