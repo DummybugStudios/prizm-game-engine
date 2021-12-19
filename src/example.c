@@ -1,25 +1,16 @@
 #include <fxcg/display.h>
 #include <fxcg/keyboard.h>
 #include <fxcg/rtc.h> 
+#include <fxcg/file.h>
 #include <string.h>
 #include <stdio.h>
-#include "images.h"
-/* Note that a progress bar has the side effect of making the long calculation you are doing to take longer.
- * The reason for this is because the screen needs to be redrawn.
- * Try figuring out an optimal balance between progress bar responsiveness and how many times it is updated.
- * A few times a second should be good enough.
- * This example does not do any long calculations like a real program would.
- * Instead it just redraws the progress bar a lot to make it take awhile thus demonstrating my point about limiting how often to redraw the progress bar.
- * Also consider: "Why do I need a progress bar? Can my code be written to be faster removing the need for a progress bar?".
- * Really the only reason you would need a progress bar is if the calcualtion takes lots of time.
- * Two seconds as an example without a progress bar should be fine.
- * 
- * If the calculation takes long enough to make the program go unresponsive for a noticeable while (e.g. one or two seconds), but not enough to warrant
- * showing a progress bar, or if you don't have a way to estimate when the calculation will be done, consider calling the syscall HourGlass periodically.
- * It will show the OS busy indicator in the top-right corner of the screen, and will not affect the speed of the program as much, since it only
- * redraws a small part of the screen. This way, it becomes apparent to the user that your program has not stopped working, and that the user should wait.
- */
 
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC
+#define STBI_NO_STDIO
+#define STBI_ONLY_PNG
+#include "stb_image.h"
+#include <math.h>
 
 color_t *vramaddress;
 
@@ -102,15 +93,46 @@ void enableGravity(int *x, int *y)
     lastTick = newTick;
 }
 
-
 void drawSprite() {
-    // width = 100 
-    for (int i = 0; i < spr_Play.width; i++)
+    static stbi_uc *sprite = NULL;
+    static int width, height; 
+    #define PATH "\\\\fls0\\project_assets\\play.png"
+    // TODO: put this in its own function
+    if (!sprite) 
     { 
-        // height = 40
-        for (int j=0;j < spr_Play.height; j++)
+        unsigned short buffer[sizeof(PATH)*2];
+        Bfile_StrToName_ncpy(buffer, (unsigned char *)PATH, sizeof(PATH));
+        int h_file = Bfile_OpenFile_OS(buffer,READ, 0);
+
+        if (h_file < 0) 
         {
-            vramaddress[i+j*LCD_WIDTH_PX] = spr_Play.image[i+j*100];
+            int x = 10;
+            int y = 10;
+            PrintMini(&x, &y, PATH " not found",0x02, -1,0,0,1,0,1,0);
+            return;
+        }
+        unsigned char sprite_png[600];
+        Bfile_ReadFile_OS(h_file, sprite_png, 600, 0);
+        int channels; 
+        sprite = stbi_load_from_memory(sprite_png,600,&width, &height, &channels, 3); 
+    }
+
+    for (int rows = 0; rows < height; rows ++) {
+        // width = 100; 
+        for (int cols = 0; cols < width; cols++)
+        {
+
+            // rgb888 colours
+            uint8_t red   = sprite[cols*3 + rows*3*width];
+            uint8_t green = sprite[cols*3 + rows*3*width+1];
+            uint8_t blue  = sprite[cols*3 + rows*3*width+2];
+
+            // convert rgb888 to rgb565 
+            uint16_t r = (red >> 3) << 11;
+            uint16_t g = (green >> 2) << 5; 
+            uint16_t b = blue >> 3;
+        
+            vramaddress[cols + rows*LCD_WIDTH_PX] = (uint16_t)(r | g | b);
         }
     }
 }
@@ -129,13 +151,13 @@ int main(void){
     for(;;){
 
         Bdisp_AllClr_VRAM();
-        // int xxx = 10;
-        // int yyy = 10; 
         drawSprite(); 
         drawRectangle(x,y,20,20);
 
-        // char debug[10]; 
-        // sprintf(&debug, "delta: %d", delta); 
+        // int xxx = 1;
+        // int yyy = 20; 
+        // char debug[70]; 
+        // sprintf(&debug, "img: %ld, %d: %d, %d, %d",otherrgb,rgb, rgb>>11, (rgb>>5)&0x3f, rgb&0x1f); 
         // PrintMini(&xxx, &yyy,debug,0x02,-1,0,0,1,0,1,0);
 
         if(keyPressed(KEY_PRGM_MENU)){

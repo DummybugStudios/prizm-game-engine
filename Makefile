@@ -31,7 +31,7 @@ INCLUDES	:=
 
 MKG3AFLAGS := -n basic:Sid -i uns:../unselected.bmp -i sel:../selected.bmp
 
-CFLAGS	= -Os -Wall $(MACHDEP) $(INCLUDE) -ffunction-sections -fdata-sections 
+CFLAGS	= -Os -Wall $(MACHDEP) $(INCLUDE) -ffunction-sections -fdata-sections -g -Wno-unused-function
 CXXFLAGS	=	$(CFLAGS)
 
 LDFLAGS	= $(MACHDEP) -T$(FXCGSDK)/toolchain/prizm.x -Wl,-static -Wl,-gc-sections
