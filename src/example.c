@@ -111,10 +111,13 @@ void drawSprite() {
             PrintMini(&x, &y, PATH " not found",0x02, -1,0,0,1,0,1,0);
             return;
         }
-        unsigned char sprite_png[600];
-        Bfile_ReadFile_OS(h_file, sprite_png, 600, 0);
+        int size = Bfile_GetFileSize_OS(h_file);
+        unsigned char *sprite_png = malloc(size);
+        Bfile_ReadFile_OS(h_file, sprite_png, size, 0);
+
         int channels; 
-        sprite = stbi_load_from_memory(sprite_png,600,&width, &height, &channels, 3); 
+        sprite = stbi_load_from_memory(sprite_png,size,&width, &height, &channels, 3); 
+        free(sprite_png); 
     }
 
     for (int rows = 0; rows < height; rows ++) {
