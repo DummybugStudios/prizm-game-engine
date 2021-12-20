@@ -24,6 +24,25 @@ static int keyPressed(int basic_keycode){
     return (0 != (keyboard_register[word] & 1<<bit));
 }
 
+void fatal_error(char *message)
+{
+    Bdisp_AllClr_VRAM();
+    int x = 0;
+    int y = 0; 
+    PrintMini(&x, &y, message, 0x02, -1,0,0,1,0,1,0);
+    for (;;)
+    { 
+        if (keyPressed(KEY_PRGM_MENU))
+        { 
+            int key;
+            GetKey(&key);
+            break;
+        }
+        Bdisp_PutDisp_DD(); 
+    }
+}
+
+
 // TODO: add color option
 void drawRectangle(int x, int y, int sizex, int sizey)
 {
@@ -106,14 +125,19 @@ void drawSprite() {
 
         if (h_file < 0) 
         {
-            int x = 10;
-            int y = 10;
-            PrintMini(&x, &y, PATH " not found",0x02, -1,0,0,1,0,1,0);
+            fatal_error(PATH " not found"); 
             return;
         }
         int size = Bfile_GetFileSize_OS(h_file);
         unsigned char *sprite_png = malloc(size);
+
+        if (!sprite_png)
+        {
+            fatal_error("mallocing sprite went wrong!"); 
+        }
+
         Bfile_ReadFile_OS(h_file, sprite_png, size, 0);
+        Bfile_CloseFile_OS(h_file); 
 
         int channels; 
         sprite = stbi_load_from_memory(sprite_png,size,&width, &height, &channels, 3); 
@@ -172,7 +196,6 @@ int main(void){
         handleMovement(&x, &y);
         enableGravity(&x, &y); 
 
-        MsgBoxPop();
         Bdisp_PutDisp_DD();
     }
 
