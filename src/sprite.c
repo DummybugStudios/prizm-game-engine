@@ -3,7 +3,7 @@
 
 #include <fxcg/file.h> 
 #include <fxcg/display.h>
-#include <engine_sprite.h>
+#include <engine/sprite.h> 
 
 Sprite *loadSprite(char *name)
 {

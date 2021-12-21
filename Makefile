@@ -1,17 +1,17 @@
 include $(FXCGSDK)/toolchain/prizm_rules
-
 OUTPUT 	:= $(CURDIR)/lib/libengine.a
 
 BUILD	:= build
 INCLUDES:= $(CURDIR)/include $(LIBFXCG_INC)
+SOURCES := src
 
 CFLAGS  := -Os -Wall $(MACHDEP) $(addprefix -I, $(INCLUDES)) -ffunction-sections -fdata-sections -g
 
-CFILES  := $(foreach dir, src, $(notdir $(wildcard $(dir)/*.c)))
+CFILES  := $(foreach dir, $(SOURCES), $(notdir $(wildcard $(dir)/*.c)))
 OBJECTS := $(addprefix $(BUILD)/,$(CFILES:.c=.o))
 
 DEPSDIR	:= $(CURDIR)/build
-VPATH 	:= $(CURDIR)/src
+VPATH 	:= $(CURDIR)/$(SOURCES)
 
 .PHONY: all clean
 
@@ -19,7 +19,6 @@ all: $(OUTPUT)
 
 $(OUTPUT): $(BUILD) $(OBJECTS)
 	$(AR) rsv $@ $(OBJECTS)
-	# $(addprefix $(BUILD)/, $(OBJECTS))
 
 $(BUILD):
 	@mkdir -p $@

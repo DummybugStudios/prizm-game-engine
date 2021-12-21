@@ -4,7 +4,7 @@
 #include <fxcg/file.h>
 #include <string.h>
 #include <stdio.h>
-#include <engine_sprite.h>
+#include <engine/sprite.h>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC
