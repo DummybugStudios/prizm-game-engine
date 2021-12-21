@@ -1,6 +1,6 @@
-file=$PWD/project.g3a
+file=$PWD/example.g3a
 cd /media/sid/disk && \
-rm project.g3a
+rm example.g3a
 cp "$file" ./ && \
 cd ../ && \
 umount /dev/sda1
