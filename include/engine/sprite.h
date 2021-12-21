@@ -5,13 +5,11 @@ typedef struct Sprite
 { 
     int width;
     int height;
-    unsigned char *location; 
-
+    unsigned char *data; 
 } Sprite; 
 
 Sprite *loadSprite(char *path);
 void unloadSprite(Sprite **sprite);
 void drawSprite(Sprite *sprite); 
-int testfunc(int x, int y); 
 
 #endif

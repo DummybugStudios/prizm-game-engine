@@ -5,7 +5,7 @@ BUILD	:= build
 INCLUDES:= $(CURDIR)/include $(LIBFXCG_INC)
 SOURCES := src
 
-CFLAGS  := -Os -Wall $(MACHDEP) $(addprefix -I, $(INCLUDES)) -ffunction-sections -fdata-sections -g
+CFLAGS  := -c -Os -Wall $(MACHDEP) $(addprefix -I, $(INCLUDES)) -ffunction-sections -fdata-sections -g -Wno-unused-function
 
 CFILES  := $(foreach dir, $(SOURCES), $(notdir $(wildcard $(dir)/*.c)))
 OBJECTS := $(addprefix $(BUILD)/,$(CFILES:.c=.o))
