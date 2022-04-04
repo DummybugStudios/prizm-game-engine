@@ -38,7 +38,7 @@ typedef struct Object
  
  
 // GRID as an array of doubly linked list of objects
-list_head *grid[GRID_X][GRID_Y];
+list_head grid[GRID_X][GRID_Y];
 
 void drawObject(SDL_Renderer* renderer, Object *object)
 {
@@ -64,7 +64,16 @@ bool isIntersecting(Object *first, Object *second)
 void detectUniformGridCollision(Object* objectList)
 {
     // reset the grid
-    memset(grid, 0, sizeof(grid));
+    // TODO: don't reset it every time please
+    for (int x = 0; x < GRID_X; x++)
+    {
+        for (int y = 0; y < GRID_Y; y++)
+        {
+            // TODO: automate this please
+            grid[x][y].prev = &grid[x][y];
+            grid[x][y].next = &grid[x][y];
+        }
+    }
 
     // fill the grid in based on where objects are
     // TODO: this is a terrible way to do this
@@ -74,25 +83,10 @@ void detectUniformGridCollision(Object* objectList)
         objectList[i].list.next = &objectList[i].list;
         objectList[i].list.prev = &objectList[i].list;
 
-        int gridX = objectList[i].posx / (WIDTH  / (GRID_X));
-        int gridY = objectList[i].posy / (HEIGHT / (GRID_Y));
-        // printf("grid x: %d, y: %d\n", gridX, gridY);
-        // color the object based on what grid it is in
-        
-        int r = gridX * 255 / (GRID_X);
-        int g = gridY * 255 / (GRID_Y) ;
-
-        objectList[i].r = r; 
-        objectList[i].g = g;
-
-        if ( grid[gridX][gridY] )
-        {
-            list_add(&objectList[i].list,grid[gridX][gridY]);
-        }
-        else
-        {
-            grid[gridX][gridY] = &objectList[i].list;
-        }
+        int gridX = objectList[i].posx / ((double)(WIDTH + 1) / (GRID_X));
+        int gridY = objectList[i].posy / ((double)(HEIGHT +1) / (GRID_Y));
+    
+        list_add(&objectList[i].list,&grid[gridX][gridY]);
     }
 
     // for all grids check if the objects in them are intersecting
@@ -100,24 +94,20 @@ void detectUniformGridCollision(Object* objectList)
     {
         for (int y = 0; y < GRID_Y; y++)
         {
-            if (!grid[x][y])
+            // check if it's empty
+            if (grid[x][y].next == &grid[x][y])
                 continue;
 
             //TODO: better way to loop over the linked list? 
-            list_head *pos1 = grid[x][y];
-            do
+            list_head *pos1; list_for_each(pos1, &grid[x][y])
             {
                 Object *obj1 = (Object *)pos1;
                 obj1->isColliding = false;
 
-                list_head *pos2 = grid[x][y];
-                do
+                list_head *pos2; list_for_each(pos2, &grid[x][y])
                 {
                     if (pos1 == pos2)
-                    {
-                        pos2 = pos2->next;
                         continue;
-                    }
                     
                     Object *obj2 = (Object *)pos2;
 
@@ -127,11 +117,9 @@ void detectUniformGridCollision(Object* objectList)
                         obj2->isColliding = true;
                         break;
                     }
-                    pos2 = pos2->next;
-                } while( pos2 != grid[x][y]);
+                }
 
-                pos1 = pos1->next;
-            } while (pos1 != grid[x][y]);
+            }
         }
     }
 }
@@ -194,8 +182,8 @@ void updateObjects(Object *objectList)
         objectList[i].rect.x = objectList[i].posx;
         objectList[i].rect.y = objectList[i].posy;
     }
-    detectCollisions(objectList);
-    // detectUniformGridCollision(objectList); 
+    // detectCollisions(objectList);
+    detectUniformGridCollision(objectList); 
 }
 
 
@@ -248,8 +236,6 @@ int main(int argc, char **argv)
     clock_t start, end;
     double avg_time = 0;
 
-    bool paused = false;
-    bool step_frame = false;
     // infinite loop but keep track of iteration for time used
     for (int j = 0; j >= 0;j++)
     {
@@ -263,9 +249,10 @@ int main(int argc, char **argv)
         // only store when not in a debugger
         j--;
         if (j < SAMPLE_SIZE && !enableBreakpoints)
+        {
             avg_time += ((double)(end - start)) / CLOCKS_PER_SEC;
             j++;
-
+        }
         // draw all objects
         for (int i = 0; i < OBJECTS; i++)
         {

@@ -13,7 +13,7 @@ typedef struct list_head
 
 
 // this creates a circular linked list
-void list_add(struct list_head *new, struct list_head *head)
+static inline void list_add(struct list_head *new, struct list_head *head)
 {
     list_head *next = head->next;
     next->prev = new;
