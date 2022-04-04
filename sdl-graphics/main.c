@@ -60,32 +60,28 @@ bool isIntersecting(Object *first, Object *second)
 
 }
 
-// Uniform Grid collision Detection
-void detectUniformGridCollision(Object* objectList)
+void initUniformGrid()
 {
-    // reset the grid
-    // TODO: don't reset it every time please
     for (int x = 0; x < GRID_X; x++)
     {
         for (int y = 0; y < GRID_Y; y++)
         {
-            // TODO: automate this please
             grid[x][y].prev = &grid[x][y];
             grid[x][y].next = &grid[x][y];
         }
     }
+}
 
+// Uniform Grid collision Detection
+void detectUniformGridCollision(Object* objectList)
+{
     // fill the grid in based on where objects are
-    // TODO: this is a terrible way to do this
     for (int i = 0; i < OBJECTS; i++)
     {
-        // ensure that the object is not part of any other lists first
-        objectList[i].list.next = &objectList[i].list;
-        objectList[i].list.prev = &objectList[i].list;
-
         int gridX = objectList[i].posx / ((double)(WIDTH + 1) / (GRID_X));
         int gridY = objectList[i].posy / ((double)(HEIGHT +1) / (GRID_Y));
-    
+
+        list_remove(&objectList[i].list);
         list_add(&objectList[i].list,&grid[gridX][gridY]);
     }
 
@@ -232,10 +228,11 @@ int main(int argc, char **argv)
 
         objects[i].isColliding = false;
     }
+
+    initUniformGrid();
     
     clock_t start, end;
     double avg_time = 0;
-
     // infinite loop but keep track of iteration for time used
     for (int j = 0; j >= 0;j++)
     {

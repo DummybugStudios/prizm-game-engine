@@ -4,7 +4,7 @@ LDFLAGS = $(shell pkg-config --libs sdl2)
 CFILES = $(wildcard *.c)
 
 build/main: build $(CFILES)
-	$(CC) $(CFILES) $(CFLAGS) -fsanitize=address  $(LDFLAGS) -fsanitize=address -static-libasan -o $@
+	$(CC) $(CFILES) $(CFLAGS) -fsanitize=address  $(LDFLAGS) -fsanitize=address -o $@
 
 build:
 	@mkdir -p $@

@@ -22,6 +22,12 @@ static inline void list_add(struct list_head *new, struct list_head *head)
     head->next = new;
 }
 
+static inline void list_remove(struct list_head *entry)
+{
+    entry->prev->next = entry->next;
+    entry->next->prev = entry->prev;
+}
+
 #define list_for_each(pos, head) \
 for (pos = (head)->next; pos != (head); pos = pos->next)
 
