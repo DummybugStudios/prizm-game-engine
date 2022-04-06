@@ -13,8 +13,8 @@
 #define HEIGHT 480  
 #define SAMPLE_SIZE 200
 
-#define GRID_X 4
-#define GRID_Y 4
+#define GRID_X 16
+#define GRID_Y 16
 
 bool enableBreakpoints = false;
 SDL_Window *window;
@@ -80,6 +80,7 @@ void detectUniformGridCollision(Object* objectList)
     {
         int gridX = objectList[i].posx / ((double)(WIDTH + 1) / (GRID_X));
         int gridY = objectList[i].posy / ((double)(HEIGHT +1) / (GRID_Y));
+        objectList[i].isColliding = false;
 
         list_remove(&objectList[i].list);
         list_add(&objectList[i].list,&grid[gridX][gridY]);
@@ -98,23 +99,36 @@ void detectUniformGridCollision(Object* objectList)
             list_head *pos1; list_for_each(pos1, &grid[x][y])
             {
                 Object *obj1 = (Object *)pos1;
-                obj1->isColliding = false;
+                // don't recheck ones that are already colliding
+                if (obj1->isColliding)
+                    continue;
 
-                list_head *pos2; list_for_each(pos2, &grid[x][y])
+                // check against all 8 neighbours
+                for (int neighbour_x = -1; neighbour_x < 2; neighbour_x++)
                 {
-                    if (pos1 == pos2)
+                    if (x + neighbour_x < 0 || x + neighbour_x > GRID_X - 1)
                         continue;
-                    
-                    Object *obj2 = (Object *)pos2;
-
-                    if (isIntersecting (obj1, obj2))
+                    for (int neighbour_y = -1; neighbour_y < 2; neighbour_y++)
                     {
-                        obj1->isColliding = true;
-                        obj2->isColliding = true;
-                        break;
+                        if (y + neighbour_y < 0 || y + neighbour_y > GRID_Y - 1)
+                            continue;
+
+                        list_head *pos2;list_for_each(pos2, &grid[x + neighbour_x][y + neighbour_y])
+                        {
+                            if (pos1 == pos2)
+                                continue;
+                            
+                            Object *obj2 = (Object *)pos2;
+
+                            if (isIntersecting (obj1, obj2))
+                            {
+                                obj1->isColliding = true;
+                                obj2->isColliding = true;
+                                break;
+                            }
+                        }
                     }
                 }
-
             }
         }
     }
@@ -220,8 +234,8 @@ int main(int argc, char **argv)
         objects[i].r = 255;
         objects[i].g = objects[i].b = 0;
 
-        objects[i].vx = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1)/10.0f;
-        objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1)/10.0f;
+        objects[i].vx = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
+        objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
         objects[i].posx = objects[i].rect.x = rand() % WIDTH;
         objects[i].posy = objects[i].rect.y = rand() % HEIGHT;
         objects[i].rect.h = objects[i].rect.w = 20;
