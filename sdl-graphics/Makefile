@@ -3,11 +3,13 @@ CFLAGS = $(shell pkg-config --cflags sdl2) -g -Wall
 LDFLAGS = $(shell pkg-config --libs sdl2) -lm
 CFILES = $(wildcard *.c)
 
-all: build/main build/opt
+.PHONY: all main opt clean
 
-main: build/main
+all: main opt
 
-build/main: build $(CFILES)
+main: build build/main
+
+build/main: $(CFILES)
 	$(CC) $(CFILES) $(CFLAGS) -fsanitize=address  $(LDFLAGS) -fsanitize=address -o $@
 
 opt: build build/opt
@@ -17,3 +19,8 @@ build:
 
 build/opt: $(CFILES)
 	$(CC) $^ $(CFLAGS) -O3 $(LDFLAGS) -o $@
+
+clean:
+	rm -f build/main
+	rm -f build/opt
+	rmdir build/
