@@ -26,6 +26,10 @@ static inline void list_remove(struct list_head *entry)
 {
     entry->prev->next = entry->next;
     entry->next->prev = entry->prev;
+
+    // The linux kernel makes these values garbage to cause pagefaults for safety
+    entry->prev = entry;
+    entry->next = entry;
 }
 
 #define list_for_each(pos, head) \

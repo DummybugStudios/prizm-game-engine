@@ -7,13 +7,10 @@
 #include "object.h"
 #include "utils.h" // TODO: maybe not needed
 #include "uniform_grid_collision.h"
+#include "hgrid.h"
 
 #define SAMPLE_SIZE 200
 
-#define GRID_X 16
-#define GRID_Y 16
-
-bool enableBreakpoints = false;
 SDL_Window *window;
 
 
@@ -87,13 +84,14 @@ void updateObjects(Object *objectList)
         objectList[i].rect.y = objectList[i].posy;
     }
     // detectCollisions(objectList);
-    detect_uniform_grid_collision(objectList); 
+    // detect_uniform_grid_collision(objectList); 
+    detect_hgrid_collision(objectList);
 }
 
 
 int main(int argc, char **argv)
 {
-
+    enableBreakpoints = false; 
     srand(0);
     // Initialise SDL2
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
@@ -117,6 +115,7 @@ int main(int argc, char **argv)
         exit(-1); 
     }
 
+    init_hgrid();
     // make 5 objects
     Object *objects = (Object *)malloc(OBJECTS * sizeof(Object));
     for (int i = 0; i < OBJECTS; i++)
@@ -135,6 +134,8 @@ int main(int argc, char **argv)
         objects[i].rect.h = objects[i].rect.w = 20;
 
         objects[i].isColliding = false;
+        add_to_hgrid(&objects[i]);
+
     }
 
     init_uniform_grid();
@@ -142,7 +143,7 @@ int main(int argc, char **argv)
     clock_t start, end;
     double avg_time = 0;
     // infinite loop but keep track of iteration for time used
-    for (int j = 0; j >= 0;j++)
+    for (int j = 0; j >= 0;)
     {
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
         SDL_RenderClear(renderer);
@@ -152,7 +153,6 @@ int main(int argc, char **argv)
         end = clock();
     
         // only store when not in a debugger
-        j--;
         if (j < SAMPLE_SIZE && !enableBreakpoints)
         {
             avg_time += ((double)(end - start)) / CLOCKS_PER_SEC;

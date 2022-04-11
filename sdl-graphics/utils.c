@@ -2,6 +2,7 @@
 #include <sys/param.h>
 
 
+
 bool isIntersecting(Object *first, Object *second)
 {
     SDL_Rect *obj1 = &first->rect;
