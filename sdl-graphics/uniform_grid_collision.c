@@ -5,8 +5,8 @@
 
 #include <stdbool.h> 
 
-#define GRID_X 16
-#define GRID_Y 16
+#define GRID_X 14
+#define GRID_Y 14
 
 list_head grid[GRID_X][GRID_Y];
 

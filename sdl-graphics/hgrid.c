@@ -41,7 +41,7 @@ void add_to_hgrid(Object *object)
     float size = MIN_CELL_SIZE;
     float diameter = MAX(object->rect.w, object->rect.h);
 
-    for(level = 0; diameter >= size; level++)
+    for(level = 0; diameter > size; level++)
         size *= CELL_TO_CELL_RATIO;
     
     // This shouldn't happen
@@ -68,9 +68,10 @@ void remove_from_hgrid(Object *object)
 
 void check_hgrid_collision(Object *object)
 {
+    if (object->isColliding) return;
     float size = MIN_CELL_SIZE;
     int occupiedLevelsMask = hgrid.occupiedLevelsMask; 
-    hgrid.tick++;
+//    hgrid.tick++;
 
     for (int level = 0; level < HGRID_MAX_LEVELS;
     size *= CELL_TO_CELL_RATIO, level++, occupiedLevelsMask >>= 1)
@@ -93,8 +94,9 @@ void check_hgrid_collision(Object *object)
             for (int y = y1; y <= y2; y++)
             {
                 int bucket = compute_hash_index(x,y,level);
-                if (hgrid.timestamp[bucket] == hgrid.tick) continue;
-                hgrid.timestamp[bucket] = hgrid.tick;
+                // TODO: when will this ever happen??
+//                if (hgrid.timestamp[bucket] == hgrid.tick) continue;
+//                hgrid.timestamp[bucket] = hgrid.tick;
 
                 // printf("x: %d, y: %d, b: %d\n", x, y, bucket);
                 list_head *pos; list_for_each(pos, &hgrid.objectBucket[bucket])
@@ -105,6 +107,7 @@ void check_hgrid_collision(Object *object)
                     if (!isIntersecting(object, obj)) continue;
                     object->isColliding = true;
                     obj->isColliding = true;
+                    return;
                 }
             }
         }

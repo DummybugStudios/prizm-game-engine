@@ -5,9 +5,9 @@ CFILES = $(wildcard *.c)
 
 .PHONY: all main opt clean profile
 
-all: main opt
-
 main: build build/main
+
+all: main opt profile
 
 build/main: $(CFILES)
 	$(CC) $(CFILES) $(CFLAGS) -fsanitize=address $(LDFLAGS) -fsanitize=address -o $@
