@@ -35,11 +35,11 @@ int compute_hash_index(int x, int y, int level)
 
 }
 
-void add_to_hgrid(Object *object)
+void add_to_hgrid(Collider *object)
 {
     int level;
     float size = MIN_CELL_SIZE;
-    float diameter = MAX(object->rect.w, object->rect.h);
+    float diameter = MAX(object->collider.rect.width, object->collider.rect.height);
 
     for(level = 0; diameter > size; level++)
         size *= CELL_TO_CELL_RATIO;
@@ -47,10 +47,9 @@ void add_to_hgrid(Object *object)
     // This shouldn't happen
     assert(level < HGRID_MAX_LEVELS);
 
-    int bucket = compute_hash_index((object->rect.x/size), (object->rect.y/size), level);
+    int bucket = compute_hash_index((object->x/size), (object->y/size), level);
     // printf("bucket-chosen: %d, x: %d, y: %d\n", bucket,object->rect.x, object->rect.y);
     object->level = level;
-    object->bucket = bucket;
 
     //TODO: Do you have to remove it first?
     list_add(&object->list, &hgrid.objectBucket[bucket]);
@@ -58,7 +57,7 @@ void add_to_hgrid(Object *object)
     hgrid.objectsAtLevel[level]++;
 }
 
-void remove_from_hgrid(Object *object)
+void remove_from_hgrid(Collider *object)
 {
     if(!--hgrid.objectsAtLevel[object->level])
         hgrid.occupiedLevelsMask &= ~(1 << object->level);
@@ -66,7 +65,7 @@ void remove_from_hgrid(Object *object)
     list_remove(&object->list);
 }
 
-void check_hgrid_collision(Object *object)
+void check_hgrid_collision(Collider *object)
 {
     if (object->isColliding) return;
     float size = MIN_CELL_SIZE;
@@ -82,12 +81,12 @@ void check_hgrid_collision(Object *object)
         // check if current list is empty 
         if (! (occupiedLevelsMask & 1)) continue;
 
-        float delta = MAX(object->rect.w, object->rect.h);
-        int x1 = (int) clamp(floorf((object->posx - delta)/size), 0, WIDTH);
-        int y1 = (int) clamp(floorf((object->posy - delta)/size), 0, HEIGHT);
+        float delta = MAX(object->collider.rect.width, object->collider.rect.height);
+        int x1 = (int) clamp(floorf((object->x - delta) / size), 0, WIDTH);
+        int y1 = (int) clamp(floorf((object->y - delta) / size), 0, HEIGHT);
 
-        int x2 = (int) clamp(ceilf((object->posx + delta)/size), 0, WIDTH);
-        int y2 = (int) clamp(ceilf((object->posy + delta)/size), 0, HEIGHT);
+        int x2 = (int) clamp(ceilf((object->x + delta) / size), 0, WIDTH);
+        int y2 = (int) clamp(ceilf((object->y + delta) / size), 0, HEIGHT);
 
         for (int x = x1; x <= x2; x++)
         {
@@ -101,7 +100,7 @@ void check_hgrid_collision(Object *object)
                 // printf("x: %d, y: %d, b: %d\n", x, y, bucket);
                 list_head *pos; list_for_each(pos, &hgrid.objectBucket[bucket])
                 {
-                    Object *obj = (Object *)pos; 
+                    Collider *obj = (Collider *)pos;
                     if (obj == object) continue;
                     // printf("checking %lx against %lx\n", (long int)object & 0xffff, (long int)obj & 0xffff);
                     if (!isIntersecting(object, obj)) continue;
@@ -114,7 +113,7 @@ void check_hgrid_collision(Object *object)
     }
 }
 
-void detect_hgrid_collision(Object* object_list)
+void detect_hgrid_collision(Collider* object_list)
 {
     // FIXME: only re-add it if it has moved.
     // but in this case everything is moving so...?

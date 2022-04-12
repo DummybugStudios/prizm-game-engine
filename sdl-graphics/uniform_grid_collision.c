@@ -23,13 +23,13 @@ void init_uniform_grid()
 }
 
 
-void detect_uniform_grid_collision(Object* objectList)
+void detect_uniform_grid_collision(Collider* objectList)
 {
     // fill the grid in based on where objects are
     for (int i = 0; i < OBJECTS; i++)
     {
-        int gridX = objectList[i].posx / ((double)(WIDTH + 1) / (GRID_X));
-        int gridY = objectList[i].posy / ((double)(HEIGHT +1) / (GRID_Y));
+        int gridX = objectList[i].x / ((double)(WIDTH + 1) / (GRID_X));
+        int gridY = objectList[i].y / ((double)(HEIGHT + 1) / (GRID_Y));
         objectList[i].isColliding = false;
 
         list_remove(&objectList[i].list);
@@ -48,7 +48,7 @@ void detect_uniform_grid_collision(Object* objectList)
             //TODO: better way to loop over the linked list? 
             list_head *pos1; list_for_each(pos1, &grid[x][y])
             {
-                Object *obj1 = (Object *)pos1;
+                Collider *obj1 = (Collider *)pos1;
                 // don't recheck ones that are already colliding
                 if (obj1->isColliding)
                     continue;
@@ -68,7 +68,7 @@ void detect_uniform_grid_collision(Object* objectList)
                             if (pos1 == pos2)
                                 continue;
                             
-                            Object *obj2 = (Object *)pos2;
+                            Collider *obj2 = (Collider *)pos2;
 
                             if (isIntersecting (obj1, obj2))
                             {

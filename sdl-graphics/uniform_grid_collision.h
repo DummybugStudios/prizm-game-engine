@@ -1,10 +1,10 @@
 #ifndef UNIFORM_GRID_COLLISION_H
 #define UNIFORM_GRID_COLLISION_H
 
-#include "object.h"
+#include "collider.h"
 
 void init_uniform_grid();
 
-void detect_uniform_grid_collision(Object *object_list);
+void detect_uniform_grid_collision(Collider *object_list);
 
 #endif

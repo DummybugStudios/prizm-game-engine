@@ -3,22 +3,19 @@
 
 
 
-bool isIntersecting(Object *first, Object *second)
+bool isIntersecting(Collider *first, Collider *second)
 {
-    SDL_Rect *obj1 = &first->rect;
-    SDL_Rect *obj2 = &second->rect;
+    Collider *right     = first->x > second->x ? first : second;
+    Collider *bottom    = first->y > second->y ? first : second;
 
-    SDL_Rect *right     = obj1->x > obj2->x ? obj1 : obj2;
-    SDL_Rect *bottom    = obj1->y > obj2->y ? obj1 : obj2;
-
-    SDL_Rect *left      = right == obj1 ? obj2 : obj1;
-    SDL_Rect *top       = bottom == obj1 ? obj2 : obj1;
+    Collider *left      = right == first ? second : first;
+    Collider *top       = bottom == first ? second : first;
 
     // This seems to produce code with less branches but I'm scared to leave it in
     // SDL_Rect *left  = (SDL_Rect *)(-(long int)right + (long int)obj1 + (long int)obj2);
     // SDL_Rect *top   = (SDL_Rect *)(-(long int)bottom + (long int)obj1 + (long int)obj2);
 
     return 
-        (right->x < left->x + left->w) &&
-        (bottom->y < top->y + top->h);
+        (right->x < left->x + left->collider.rect.width) &&
+        (bottom->y < top->y + top->collider.rect.height);
 }

@@ -2,9 +2,10 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <time.h> // for benchmarking
+#include <assert.h>
 
 #include "constants.h"
-#include "object.h"
+#include "collider.h"
 #include "utils.h" // TODO: maybe not needed
 #include "uniform_grid_collision.h"
 #include "hgrid.h"
@@ -15,17 +16,27 @@ SDL_Window *window;
 
 
 // Quickly render square
-void drawObject(SDL_Renderer* renderer, Object *object)
+void drawObject(SDL_Renderer* renderer, Collider *collider)
 {
-    if (object->isColliding)
+    // TODO: add circle drawing ability
+    assert (collider->type == BOX_COLLIDER);
+
+    if (collider->isColliding)
         SDL_SetRenderDrawColor(renderer, 255,255,0,255);
     else
-        SDL_SetRenderDrawColor(renderer, object->r,object->g,object->b,255);
-    SDL_RenderFillRect(renderer, &object->rect);
+        SDL_SetRenderDrawColor(renderer, collider->r, collider->g, collider->b, 255);
+
+    SDL_Rect rect = {
+            .x = collider->x,
+            .y = collider->y,
+            .h = collider->collider.rect.height,
+            .w = collider->collider.rect.width,
+    };
+    SDL_RenderFillRect(renderer, &rect);
 }
 
 // BASIC collision detection
-void detectCollisions(Object *objectList)
+void detectCollisions(Collider *objectList)
 {
     bool collisions[OBJECTS];
     memset(collisions, false, sizeof(collisions)); 
@@ -61,31 +72,29 @@ void detectCollisions(Object *objectList)
 }
 
 // Basic Physics Update
-void updateObjects(Object *objectList)
+void updateObjects(Collider *objectList)
 {
     for (int i = 0; i < OBJECTS; i++)
     {
-        objectList[i].posx += objectList[i].vx;
-        objectList[i].posy += objectList[i].vy;
+        objectList[i].x += objectList[i].vx;
+        objectList[i].y += objectList[i].vy;
 
-        if (objectList[i].posy < 0 || objectList[i].posy > HEIGHT)
+        if (objectList[i].y < 0 || objectList[i].y > HEIGHT)
         {
             // very cool branchless way to clamp values
-            objectList[i].posy = (objectList[i].posy > 0) * HEIGHT;
+            objectList[i].y = (objectList[i].y > 0) * HEIGHT;
             objectList[i].vy *= -1; 
         }
 
-        if (objectList[i].posx < 0 || objectList[i].posx > WIDTH)
+        if (objectList[i].x < 0 || objectList[i].x > WIDTH)
         {
-            objectList[i].posx = (objectList[i].posx > 0) * WIDTH;
+            objectList[i].x = (objectList[i].x > 0) * WIDTH;
             objectList[i].vx *= -1;
         }   
-        objectList[i].rect.x = objectList[i].posx;
-        objectList[i].rect.y = objectList[i].posy;
     }
-    // detectCollisions(objectList);
-    // detect_uniform_grid_collision(objectList); 
-    detect_hgrid_collision(objectList);
+     detectCollisions(objectList);
+//     detect_uniform_grid_collision(objectList);
+//    detect_hgrid_collision(objectList);
 }
 
 
@@ -117,21 +126,23 @@ int main(int argc, char **argv)
 
     init_hgrid();
     // make 5 objects
-    Object *objects = (Object *)malloc(OBJECTS * sizeof(Object));
+    Collider *objects = (Collider *)malloc(OBJECTS * sizeof(Collider));
     for (int i = 0; i < OBJECTS; i++)
     {
         // initially all lists are empty.
         objects[i].list.next = &objects[i].list;
         objects[i].list.prev = &objects[i].list;
 
+        objects[i].type = BOX_COLLIDER;
+
         objects[i].r = 255;
         objects[i].g = objects[i].b = 0;
 
         objects[i].vx = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
         objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
-        objects[i].posx = objects[i].rect.x = rand() % WIDTH;
-        objects[i].posy = objects[i].rect.y = rand() % HEIGHT;
-        objects[i].rect.h = objects[i].rect.w = rand() % 51 + 20;
+        objects[i].x = rand() % WIDTH;
+        objects[i].y = rand() % HEIGHT;
+        objects[i].collider.rect.height = objects[i].collider.rect.width = rand() % 51 + 20;
 
         objects[i].isColliding = false;
         add_to_hgrid(&objects[i]);

@@ -1,6 +1,6 @@
 #ifndef HGRID_H
 #define HGRID_H 
-#include "object.h"
+#include "collider.h"
 
 #define HGRID_MAX_LEVELS 4
 #define NUM_BUCKETS 200 // Todo: how many should it have? 
@@ -18,8 +18,8 @@ typedef struct Hgrid {
 
 void init_hgrid();
 
-void add_to_hgrid(Object *object);
+void add_to_hgrid(Collider *object);
 
-void detect_hgrid_collision(Object *object_list);
+void detect_hgrid_collision(Collider *object_list);
 
 #endif

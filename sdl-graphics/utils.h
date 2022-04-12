@@ -2,7 +2,7 @@
 #define UTILS_H
 #include <stdbool.h>
 
-#include "object.h"
+#include "collider.h"
 
 static inline double clamp(double val, double low, double high)
 {
@@ -10,6 +10,6 @@ static inline double clamp(double val, double low, double high)
     return ret > high ? high : ret; 
 }
 
-bool isIntersecting(Object *obj1, Object *obj2);
+bool isIntersecting(Collider *obj1, Collider *obj2);
 
 #endif
