@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS = $(shell pkg-config --cflags sdl2) -g -Wall
-LDFLAGS = $(shell pkg-config --libs sdl2) -lm
+CFLAGS = $(shell pkg-config --cflags sdl2) $(shell pkg-config --cflags SDL2_gfx) -g -Wall
+LDFLAGS = $(shell pkg-config --libs sdl2) $(shell pkg-config --libs SDL2_gfx) -lm
 CFILES = $(wildcard *.c)
 
 .PHONY: all main opt clean profile

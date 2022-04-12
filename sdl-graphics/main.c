@@ -9,6 +9,7 @@
 #include "utils.h" // TODO: maybe not needed
 #include "uniform_grid_collision.h"
 #include "hgrid.h"
+#include <SDL2_gfxPrimitives.h>
 
 #define SAMPLE_SIZE 200
 
@@ -18,21 +19,28 @@ SDL_Window *window;
 // Quickly render square
 void drawObject(SDL_Renderer* renderer, Collider *collider)
 {
-    // TODO: add circle drawing ability
-    assert (collider->type == BOX_COLLIDER);
-
-    if (collider->isColliding)
-        SDL_SetRenderDrawColor(renderer, 255,255,0,255);
-    else
-        SDL_SetRenderDrawColor(renderer, collider->r, collider->g, collider->b, 255);
-
     SDL_Rect rect = {
             .x = collider->x,
             .y = collider->y,
             .h = collider->collider.rect.height,
             .w = collider->collider.rect.width,
     };
-    SDL_RenderFillRect(renderer, &rect);
+    switch (collider->type)
+    {
+        case (BOX_COLLIDER):
+            if (collider->isColliding)
+                SDL_SetRenderDrawColor(renderer, 255, 255, 0, 255);
+            else
+                SDL_SetRenderDrawColor(renderer, collider->r, collider->g, collider->b, 255);
+            SDL_RenderFillRect(renderer, &rect);
+            break;
+        case (CIRCLE_COLLIDER):
+            if (collider->isColliding)
+                filledCircleRGBA(renderer,collider->x, collider->y, collider->collider.circle.radius, 255,255,0, 0xff);
+            else
+                filledCircleRGBA(renderer,collider->x, collider->y, collider->collider.circle.radius, collider->r, collider->g, collider->b, 0xff);
+            break;
+    };
 }
 
 // BASIC collision detection
@@ -133,7 +141,7 @@ int main(int argc, char **argv)
         objects[i].list.next = &objects[i].list;
         objects[i].list.prev = &objects[i].list;
 
-        objects[i].type = BOX_COLLIDER;
+        objects[i].type = CIRCLE_COLLIDER;
 
         objects[i].r = 255;
         objects[i].g = objects[i].b = 0;
@@ -142,7 +150,8 @@ int main(int argc, char **argv)
         objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
         objects[i].x = rand() % WIDTH;
         objects[i].y = rand() % HEIGHT;
-        objects[i].collider.rect.height = objects[i].collider.rect.width = rand() % 51 + 20;
+//        objects[i].collider.rect.height = objects[i].collider.rect.width = rand() % 51 + 20;
+        objects[i].collider.circle.radius = 20;
 
         objects[i].isColliding = false;
         add_to_hgrid(&objects[i]);
