@@ -102,7 +102,7 @@ int main(int argc, char **argv)
 
     // Set up rendering
     int rendererFlags = SDL_RENDERER_ACCELERATED;
-    window = SDL_CreateWindow("Collisions", 0,50,640,480,rendererFlags);
+    window = SDL_CreateWindow("Collisions", 0,0,WIDTH,HEIGHT,rendererFlags);
     if (!window)
     {
         fprintf(stderr, "Could not get window\n");
@@ -131,7 +131,7 @@ int main(int argc, char **argv)
         objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
         objects[i].posx = objects[i].rect.x = rand() % WIDTH;
         objects[i].posy = objects[i].rect.y = rand() % HEIGHT;
-        objects[i].rect.h = objects[i].rect.w = 20;
+        objects[i].rect.h = objects[i].rect.w = rand() % 51 + 20;
 
         objects[i].isColliding = false;
         add_to_hgrid(&objects[i]);
@@ -158,6 +158,12 @@ int main(int argc, char **argv)
             avg_time += ((double)(end - start)) / CLOCKS_PER_SEC;
             j++;
         }
+        else if (j == SAMPLE_SIZE)
+        {
+            printf("Average time to update: %f\n", avg_time/SAMPLE_SIZE);
+            j++;
+        }
+
         // draw all objects
         for (int i = 0; i < OBJECTS; i++)
         {
@@ -170,7 +176,6 @@ int main(int argc, char **argv)
         { 
             if (event.type == SDL_QUIT)
             {
-                printf("Average time to update: %f\n", avg_time/SAMPLE_SIZE);
                 exit(-1);
             }
             // TODO: can it be rewritten with a switch? 
