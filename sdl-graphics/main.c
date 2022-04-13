@@ -2,7 +2,6 @@
 #include <SDL2/SDL.h>
 #include <stdlib.h>
 #include <time.h> // for benchmarking
-#include <assert.h>
 
 #include "constants.h"
 #include "collider.h"
@@ -100,8 +99,8 @@ void updateObjects(Collider *objectList)
             objectList[i].vx *= -1;
         }   
     }
-     detectCollisions(objectList);
-//     detect_uniform_grid_collision(objectList);
+//     detectCollisions(objectList);
+     detect_uniform_grid_collision(objectList);
 //    detect_hgrid_collision(objectList);
 }
 
@@ -141,7 +140,14 @@ int main(int argc, char **argv)
         objects[i].list.next = &objects[i].list;
         objects[i].list.prev = &objects[i].list;
 
-        objects[i].type = CIRCLE_COLLIDER;
+        if (i % 2) {
+            objects[i].type = CIRCLE_COLLIDER;
+            objects[i].collider.circle.radius = 20;
+        }
+        else {
+            objects[i].type = BOX_COLLIDER;
+            objects[i].collider.rect.height = objects[i].collider.rect.width = 40;
+        }
 
         objects[i].r = 255;
         objects[i].g = objects[i].b = 0;
@@ -150,8 +156,6 @@ int main(int argc, char **argv)
         objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
         objects[i].x = rand() % WIDTH;
         objects[i].y = rand() % HEIGHT;
-//        objects[i].collider.rect.height = objects[i].collider.rect.width = rand() % 51 + 20;
-        objects[i].collider.circle.radius = 20;
 
         objects[i].isColliding = false;
         add_to_hgrid(&objects[i]);

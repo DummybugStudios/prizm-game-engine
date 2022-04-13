@@ -1,21 +1,56 @@
 #include "utils.h"
-#include <sys/param.h>
+#include "collider.h"
+
+static inline float square(float a)
+{
+    return a*a;
+}
 
 
+// Return the squared distance between a point and an AABB
+static inline float square_dist_point_rect(Collider *rect, float x, float y)
+{
+    float sqDist = 0;
+
+    if (x < rect->x) sqDist += square(rect->x - x);
+    if (x > rect->x+rect->collider.rect.width) sqDist += square(rect->x + rect->collider.rect.width - x);
+
+    if (y < rect->y) sqDist += square(rect->y - y);
+    if (y > rect->y+rect->collider.rect.height) sqDist += square(rect->y + rect->collider.rect.height - y);
+
+    return sqDist;
+}
 
 bool isIntersecting(Collider *first, Collider *second)
 {
-    Collider *right     = first->x > second->x ? first : second;
-    Collider *bottom    = first->y > second->y ? first : second;
+    // case 0 vars
+    float t;
 
-    Collider *left      = right == first ? second : first;
-    Collider *top       = bottom == first ? second : first;
+    // case 1 vars
+    Collider *rect = first;
+    Collider *circle = second;
 
-    // This seems to produce code with less branches but I'm scared to leave it in
-    // SDL_Rect *left  = (SDL_Rect *)(-(long int)right + (long int)obj1 + (long int)obj2);
-    // SDL_Rect *top   = (SDL_Rect *)(-(long int)bottom + (long int)obj1 + (long int)obj2);
+    // case 2 vars
+    float sqDist;
 
-    return 
-        (right->x < left->x + left->collider.rect.width) &&
-        (bottom->y < top->y + top->collider.rect.height);
+    switch (first->type + second->type)
+    {
+        case 0: // both AABBs
+            if ((t = first->x - second->x) > second->collider.rect.width || -t > first->collider.rect.width) return false;
+            if ((t = first->y - second->y) > second->collider.rect.height || -t > first->collider.rect.height) return false;
+            return true;
+
+        case 1: // AABB vs circle
+            if (first->type == CIRCLE_COLLIDER)
+            {
+                circle = first;
+                rect = second;
+            }
+            return square_dist_point_rect(rect, circle->x, circle->y) <= square(circle->collider.circle.radius);
+
+        case 2: // Both circles
+            sqDist = square(first->x - second->x) + square(first->y - second->y);
+            return sqDist <= square(first->collider.circle.radius + second->collider.circle.radius);
+    }
+    return 0;
 }
