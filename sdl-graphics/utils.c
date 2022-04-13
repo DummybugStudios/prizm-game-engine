@@ -26,7 +26,6 @@ static inline float square_dist_point_rect(Collider *rect, float x, float y)
 void handle_collision_physics(Collider *a, Collider*b)
 {
     //TODO: make it work with all the colliders
-    assert(a->type == CIRCLE_COLLIDER && b->type==CIRCLE_COLLIDER);
     float m1 = 1;
     float m2 = 1;
 
