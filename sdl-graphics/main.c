@@ -3,11 +3,11 @@
 #include <stdlib.h>
 #include <time.h> // for benchmarking
 
-#include "constants.h"
-#include "collider.h"
-#include "utils.h" // TODO: maybe not needed
-#include "uniform_grid_collision.h"
-#include "hgrid.h"
+#include <engine/constants.h>
+#include <engine/collider.h>
+#include <engine/utils.h> // TODO: maybe not needed
+#include <engine/uniform_grid_collision.h>
+#include <engine/hgrid.h>
 #include <SDL2_gfxPrimitives.h>
 
 #define SAMPLE_SIZE 200

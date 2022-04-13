@@ -1,12 +1,13 @@
-#include "hgrid.h"
-#include "utils.h"
-#include "constants.h"
+#include <engine/hgrid.h>
+#include <engine/utils.h>
+#include <engine/constants.h>
 
 #include <stdio.h>
-#include <sys/param.h>
 #include <assert.h>
 #include <math.h>
 #include <stdbool.h>
+
+#define MAX(a,b) ((a)>(b)?(a):(b));
 
 Hgrid hgrid  = {
     .occupiedLevelsMask = 0,

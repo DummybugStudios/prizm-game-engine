@@ -1,7 +1,6 @@
 #ifndef OBJECTS_H
 #define OBJECTS_H
 
-#include <SDL2/SDL.h>
 #include <sys/types.h>
 #include "linked_list.h"
 #include <stdbool.h>
@@ -26,9 +25,9 @@ typedef struct Collider
     list_head list;
     ColliderType type;
 
-    uint8_t r;
-    uint8_t g;
-    uint8_t b;
+    int r;
+    int g;
+    int b;
     int level;  // for use by hash grid
     float vx;
     float vy;

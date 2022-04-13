@@ -1,6 +1,6 @@
 #ifndef HGRID_H
 #define HGRID_H 
-#include "collider.h"
+#include <engine/collider.h>
 
 #define HGRID_MAX_LEVELS 4
 #define NUM_BUCKETS 200 // Todo: how many should it have? 

@@ -1,7 +1,7 @@
 #include <assert.h>
-#include "utils.h"
-#include "collider.h"
-#include "vector.h"
+#include <engine/utils.h>
+#include <engine/collider.h>
+#include <engine/vector.h>
 
 static inline float square(float a)
 {
