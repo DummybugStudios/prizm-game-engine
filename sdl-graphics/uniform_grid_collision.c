@@ -74,6 +74,7 @@ void detect_uniform_grid_collision(Collider* objectList)
                             {
                                 obj1->isColliding = true;
                                 obj2->isColliding = true;
+                                handle_collision_physics(obj1, obj2);
                                 break;
                             }
                         }

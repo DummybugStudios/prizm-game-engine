@@ -140,14 +140,14 @@ int main(int argc, char **argv)
         objects[i].list.next = &objects[i].list;
         objects[i].list.prev = &objects[i].list;
 
-        if (i % 2) {
+//        if (i % 2) {
             objects[i].type = CIRCLE_COLLIDER;
             objects[i].collider.circle.radius = 20;
-        }
-        else {
-            objects[i].type = BOX_COLLIDER;
-            objects[i].collider.rect.height = objects[i].collider.rect.width = 40;
-        }
+//        }
+//        else {
+//            objects[i].type = BOX_COLLIDER;
+//            objects[i].collider.rect.height = objects[i].collider.rect.width = 40;
+//        }
 
         objects[i].r = 255;
         objects[i].g = objects[i].b = 0;

@@ -10,6 +10,8 @@ static inline double clamp(double val, double low, double high)
     return ret > high ? high : ret; 
 }
 
+void handle_collision_physics(Collider *a, Collider *b);
+
 bool isIntersecting(Collider *obj1, Collider *obj2);
 
 #endif
