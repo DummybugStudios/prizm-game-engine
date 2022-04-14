@@ -13,7 +13,7 @@ OBJECTS := $(addprefix $(BUILD)/,$(CFILES:.c=.o))
 DEPSDIR	:= $(CURDIR)/build
 VPATH 	:= $(CURDIR)/$(SOURCES)
 
-.PHONY: all clean
+.PHONY: all clean libengine
 
 all: $(OUTPUT)
 

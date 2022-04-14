@@ -39,7 +39,7 @@ LDFLAGS	= $(MACHDEP) -T$(FXCGSDK)/toolchain/prizm.x -Wl,-static -Wl,-gc-sections
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
 #---------------------------------------------------------------------------------
-LIBS	:=	 -lengine -lfxcg -lc -lgcc
+LIBS	:=	-lfxcg -lc -lgcc
 
 #---------------------------------------------------------------------------------
 # list of directories containing libraries, this must be the top level containing
@@ -98,7 +98,10 @@ export LIBPATHS	:=	$(foreach dir,$(LIBDIRS),-L$(dir)/lib) \
 					-L$(LIBFXCG_LIB)
 
 export OUTPUT	:=	$(CURDIR)/$(TARGET)
-.PHONY: all clean
+
+export ENGINE 	:= $(abspath ../../lib/libengine.a)
+
+.PHONY: all clean libengine
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
@@ -123,8 +126,17 @@ DEPENDS	:=	$(OFILES:.o=.d)
 # main targets
 #---------------------------------------------------------------------------------
 $(OUTPUT).g3a: $(OUTPUT).bin
-$(OUTPUT).bin: $(OFILES)
+$(OUTPUT).bin: $(OFILES) $(ENGINE)
 
+# checks if the engine has been updated every time so you don't have to build it separately
+# the engine needs to depend on the phony libengine target so that its built every time
+# it can't itself be phony because of makefile rules it seems.
+$(ENGINE): libengine
+	make -C $(dir $(ENGINE))../
+
+# Fake target that does nothing
+libengine:
+	@:
 
 -include $(DEPENDS)
 
