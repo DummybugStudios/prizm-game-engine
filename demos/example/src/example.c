@@ -26,9 +26,12 @@ int main(void){
     Collider colliders[OBJECTS];
     for (int i = 0; i < OBJECTS; i++)
     {
-        colliders[i].type = BOX_COLLIDER;
-        colliders[i].collider.rect.width    = 
-        colliders[i].collider.rect.height   = 20;
+        // colliders[i].type = BOX_COLLIDER;
+        // colliders[i].collider.rect.width    = 
+        // colliders[i].collider.rect.height   = 20;
+
+        colliders[i].type = CIRCLE_COLLIDER;
+        colliders[i].collider.circle.radius = 10;
 
         colliders[i].x = sys_rand() % LCD_WIDTH_PX - 20;
         colliders[i].x = colliders[i].x < 0 ? 0 : colliders[i].x;

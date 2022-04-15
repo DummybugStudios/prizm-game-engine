@@ -25,10 +25,45 @@ void draw_rectangle(Collider *collider)
 // draw circle outline
 void draw_circle (Collider *collider)
 {
-    float x = collider->x;
-    float y = collider->y;
-    float radius = collider->collider.circle.radius;
-    
+    int x0 = collider->x;
+    int y0 = collider->y;
+    int radius = collider->collider.circle.radius;
+
+    int x = radius - 1;
+    int y = 0;
+
+    int dx,dy;
+    dx = dy = 1;
+
+    int err = dx - (radius << 1);
+
+    int color = 0b0000011111100000;
+    while (x >= y)
+    {
+        vramaddress[(x0 + x)*WIDTH + y0 + y] = color;
+        vramaddress[(x0 + y)*WIDTH + y0 + x] = color;
+        vramaddress[(x0 - y)*WIDTH + y0 + x] = color;
+        vramaddress[(x0 - x)*WIDTH + y0 + y] = color;
+        vramaddress[(x0 - x)*WIDTH + y0 - y] = color;
+        vramaddress[(x0 - y)*WIDTH + y0 - x] = color;
+        vramaddress[(x0 + y)*WIDTH + y0 - x] = color;
+        vramaddress[(x0 + x)*WIDTH + y0 - y] = color;
+
+        if (err <= 0)
+        {
+            y++;
+            err += dy;
+            dy += 2;
+        }
+        
+        if (err > 0)
+        {
+            x--;
+            dx += 2;
+            err += dx - (radius << 1);
+        }
+    }
+
 }
 
 void draw_collider(Collider *collider)
