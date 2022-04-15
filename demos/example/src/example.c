@@ -4,7 +4,11 @@
 #include <fxcg/file.h>
 #include <string.h>
 #include <stdio.h>
+#include <stdlib.h>
 #include <engine/sprite.h>
+#include <engine/hgrid.h>
+#include <engine/collider.h>
+#include <engine/constants.h>
 
 #include <math.h>
 
@@ -40,9 +44,14 @@ void fatal_error(char *message)
 
 
 // TODO: add color option
-void drawRectangle(int x, int y, int sizex, int sizey)
+void drawRectangle(Collider *collider)
 {
     // start at the top left
+    float x = collider->x;
+    float y = collider->y;
+    float sizey = collider->collider.rect.height;
+    float sizex = collider->collider.rect.width;
+
     int startpoint = (y-sizey)*LCD_WIDTH_PX + (x-sizex); 
     for (int i = startpoint; i < startpoint+sizex; i++)
     { 
@@ -55,16 +64,16 @@ void drawRectangle(int x, int y, int sizex, int sizey)
 }
 
 static float uy = 0; 
-void handleMovement(int *x, int *y)
+void handleMovement(float *x, float *y)
 { 
         if(keyPressed(KEY_PRGM_LEFT))
-            *x--; 
+            (*x)--; 
         if(keyPressed(KEY_PRGM_RIGHT))
-            *x++; 
+            (*x)++; 
         if(keyPressed(KEY_PRGM_UP))
             uy-=0.2; 
         if(keyPressed(KEY_PRGM_DOWN))
-            uy+=0.2; 
+            uy+=0.2;
 }
 
 
@@ -117,22 +126,37 @@ int main(void){
     int x = 50;
     int y = 50; 
 
+    sys_srand(RTC_GetTicks());
+
+    Collider colliders[OBJECTS];
+    for (int i = 0; i < OBJECTS; i++)
+    {
+        colliders[i].type = BOX_COLLIDER;
+        colliders[i].collider.rect.width    = 
+        colliders[i].collider.rect.height   = 20;
+
+        colliders[i].x = sys_rand() % LCD_WIDTH_PX - 20;
+        colliders[i].x = colliders[i].x < 0 ? 0 : colliders[i].x;
+
+        colliders[i].y = sys_rand() % LCD_HEIGHT_PX - 20;
+        colliders[i].y = colliders[i].y < 0 ? 0 : colliders[i].y; 
+    }
+
     // initialize lastTick
     lastTick = RTC_GetTicks(); 
-    Sprite *sprite = loadSprite("\\\\fls0\\example_assets\\play.png");
     for(;;){
 
         Bdisp_AllClr_VRAM();
-        // drawSprite(); 
-        drawSprite(sprite); 
-        drawRectangle(x,y,20,20);
+        for (int i =0; i < sizeof(colliders) /sizeof(Collider); i++)
+        { 
+            drawRectangle(&colliders[i]);
+        }
 
-        // int xxx = 1;
-        // int yyy = 20; 
-        // char debug[70]; 
-        // sprintf(&debug, "res: %d",testfunc(2,3)); 
-        // char *debug = "Hello";
-        // PrintMini(&xxx, &yyy,debug,0x02,-1,0,0,1,0,1,0);
+        int xxx = 1;
+        int yyy = 20; 
+        char debug[70]; 
+        sprintf(&debug, "size: %d, x: %f, y: %f",OBJECTS,(colliders[1].x),(colliders[1].y)); 
+        PrintMini(&xxx, &yyy,debug,0x02,-1,0,0,1,0,1,0);
 
         if(keyPressed(KEY_PRGM_MENU)){
             int key;
@@ -140,8 +164,8 @@ int main(void){
             break;
         }
  
-        handleMovement(&x, &y);
-        enableGravity(&x, &y); 
+        handleMovement(&(colliders[1].x), &(colliders[1].y));
+        // enableGravity(&x, &y); 
 
         Bdisp_PutDisp_DD();
     }
