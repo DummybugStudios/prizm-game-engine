@@ -12,6 +12,22 @@ typedef struct Vector
     float y;
 } Vector;
 
+static inline float Q_rsqrt( float number )
+{
+	long i;
+	float x2, y;
+	const float threehalfs = 1.5F;
+
+	x2 = number * 0.5F;
+	y  = number;
+	i  = * ( long * ) &y;                       // evil floating point bit level hacking
+	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
+	y  = * ( float * ) &i;
+	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
+//	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
+	return y;
+}
+
 static inline Vector vec_multiply(Vector vector, float scalar)
 {
     vector.x *= scalar;
@@ -29,7 +45,7 @@ static inline float sq_magnitude(Vector vector)
 // Try to use sq_magnitude instead
 static inline float magnitude(Vector vector)
 {
-    return sqrt(sq_magnitude(vector));
+    return sqrt((double)sq_magnitude(vector));
 }
 
 static inline Vector vec_add(Vector vec1, Vector vec2)
@@ -41,7 +57,11 @@ static inline Vector vec_add(Vector vec1, Vector vec2)
 
 static inline Vector normalize(Vector vector)
 {
+    #ifdef __SH4A__
+    return vec_multiply(vector, Q_rsqrt(sq_magnitude(vector)));
+    #else
     return vec_multiply(vector, 1/magnitude(vector));
+    #endif
 }
 
 static inline float dot(Vector v1, Vector v2)

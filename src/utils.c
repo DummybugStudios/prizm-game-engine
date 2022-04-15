@@ -114,3 +114,43 @@ bool isIntersecting(Collider *first, Collider *second)
     }
     return 0;
 }
+
+// Calculator specific utilities
+
+#ifdef __SH4A__
+
+#include <fxcg/display.h>
+#include <fxcg/keyboard.h>
+
+// function stolen from the libfxcg examples. Don't know why they don't make this a library function.
+int key_pressed(int basic_keycode){
+    const unsigned short* keyboard_register = (unsigned short*)0xA44B0000;
+    int row, col, word, bit;
+    row = basic_keycode%10;
+    col = basic_keycode/10-1;
+    word = row>>1;
+    bit = col + ((row&1)<<3);
+    return (0 != (keyboard_register[word] & 1<<bit));
+}
+
+void fatal_error(char *message)
+{
+    Bdisp_AllClr_VRAM();
+    int x = 0;
+    int y = 0; 
+    PrintMini(&x, &y, message, 0x02, -1,0,0,1,0,1,0);
+    for (;;)
+    { 
+        if (key_pressed(KEY_PRGM_MENU))
+        { 
+            int key;
+            GetKey(&key);
+            break;
+        }
+        Bdisp_PutDisp_DD(); 
+    }
+}
+
+
+
+#endif 

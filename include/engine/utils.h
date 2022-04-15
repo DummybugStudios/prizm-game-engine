@@ -14,4 +14,14 @@ void handle_collision_physics(Collider *a, Collider *b);
 
 bool isIntersecting(Collider *obj1, Collider *obj2);
 
+// CASIO specific utilities
+
+#ifdef __SH4A__
+
+int key_pressed(int basic_keycode);
+
+void fatal_error(char *message);
+
+#endif // __SH4A__
+
 #endif
