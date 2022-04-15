@@ -12,6 +12,11 @@ typedef struct Vector
     float y;
 } Vector;
 
+union convert{
+    long i;
+    float f;
+};
+
 static inline float Q_rsqrt( float number )
 {
 	long i;
@@ -19,10 +24,12 @@ static inline float Q_rsqrt( float number )
 	const float threehalfs = 1.5F;
 
 	x2 = number * 0.5F;
-	y  = number;
-	i  = * ( long * ) &y;                       // evil floating point bit level hacking
+    union convert c;
+    c.f = number;
+    i = c.i;                                    // Using union instead of unsafe pointer casting
 	i  = 0x5f3759df - ( i >> 1 );               // what the fuck? 
-	y  = * ( float * ) &i;
+    c.i = i;
+    y = c.f;
 	y  = y * ( threehalfs - ( x2 * y * y ) );   // 1st iteration
 //	y  = y * ( threehalfs - ( x2 * y * y ) );   // 2nd iteration, this can be removed
 	return y;
