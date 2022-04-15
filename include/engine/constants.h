@@ -24,7 +24,6 @@ extern bool enableBreakpoints;
 
 #endif
 
-#define OBJECTS 5
-
+#define OBJECTS 15
 
 #endif

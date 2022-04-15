@@ -8,13 +8,34 @@
 #include <stdlib.h>
 #include <math.h> 
 
-#include <engine/sprite.h>
-#include <engine/hgrid.h>
+#include <engine/uniform_grid_collision.h>
 #include <engine/collider.h>
 #include <engine/constants.h>
 #include <engine/drawing.h>
 #include <engine/utils.h>
-#include <engine/vector.h>
+
+void update_objects(Collider *colliders)
+{
+    //TODO: What order should we do this in? 
+    for (int i = 0; i < OBJECTS; i++)
+    {
+        colliders[i].x += colliders[i].vx;
+        colliders[i].y += colliders[i].vy; 
+        int radius = colliders[i].collider.circle.radius;
+
+        if (colliders[i].x < 0 || colliders[i].x > WIDTH - radius)
+        {
+            colliders[i].x = colliders[i].x < 0 ? 0 : WIDTH - radius-1;
+            colliders[i].vx *= -1;
+        }
+        if (colliders[i].y < 0 || colliders[i].y > HEIGHT - radius)
+        {
+            colliders[i].y = colliders[i].y < 0 ? 0 : HEIGHT - radius-1;
+            colliders[i].vy *= -1;
+        }
+    }
+    detect_uniform_grid_collision(colliders);
+}
 
 int main(void){
     init_engine();
@@ -24,35 +45,43 @@ int main(void){
 
     // Create colliders
     Collider colliders[OBJECTS];
-    for (int i = 0; i < OBJECTS; i++)
-    {
-        // colliders[i].type = BOX_COLLIDER;
-        // colliders[i].collider.rect.width    = 
-        // colliders[i].collider.rect.height   = 20;
 
+    // cue ball
+    colliders[0].type = CIRCLE_COLLIDER;
+    colliders[0].collider.circle.radius = 10;
+    colliders[0].x = colliders[0].collider.circle.radius*2*((OBJECTS-1)>>1);
+    colliders[0].y = HEIGHT >> 2;
+    colliders[0].vy = -3.0f;
+
+    // rest of the balls
+    for (int i = 1; i < OBJECTS; i++)
+    {
         colliders[i].type = CIRCLE_COLLIDER;
         colliders[i].collider.circle.radius = 10;
 
-        colliders[i].x = sys_rand() % LCD_WIDTH_PX - 20;
-        colliders[i].x = colliders[i].x < 0 ? 0 : colliders[i].x;
+        colliders[i].x = 20*i + 5;
+        // colliders[i].x = colliders[i].x < 0 ? 0 : colliders[i].x;
 
-        colliders[i].y = sys_rand() % LCD_HEIGHT_PX - 20;
-        colliders[i].y = colliders[i].y < 0 ? 0 : colliders[i].y; 
+        colliders[i].y =10;
+        // colliders[i].y = colliders[i].y < 0 ? 0 : colliders[i].y; 
     }
+    init_uniform_grid();
     
     for(;;){
         
         Bdisp_AllClr_VRAM();
-        for (int i =0; i < sizeof(colliders) /sizeof(Collider); i++)
+        update_objects(colliders);
+        for (int i =0; i < OBJECTS; i++)
         { 
             draw_collider(&colliders[i]);
         }
 
         // TODO: make print debugging a utility function
         // char debug[255];
-        // sprintf(debug, "%f",Q_rsqrt(0.8f));
+        // sprintf(debug, "%f",0.2);
         // locate_OS(1,1);
         // Print_OS(debug, 0,0);
+        // PrintXY(1,1, "  Hello world", 0, 0);
 
         
         if(key_pressed(KEY_PRGM_MENU)){
