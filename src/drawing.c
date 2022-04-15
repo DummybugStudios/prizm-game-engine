@@ -40,14 +40,14 @@ void draw_circle (Collider *collider)
     int color = 0b0000011111100000;
     while (x >= y)
     {
-        vramaddress[(x0 + x)*WIDTH + y0 + y] = color;
-        vramaddress[(x0 + y)*WIDTH + y0 + x] = color;
-        vramaddress[(x0 - y)*WIDTH + y0 + x] = color;
-        vramaddress[(x0 - x)*WIDTH + y0 + y] = color;
-        vramaddress[(x0 - x)*WIDTH + y0 - y] = color;
-        vramaddress[(x0 - y)*WIDTH + y0 - x] = color;
-        vramaddress[(x0 + y)*WIDTH + y0 - x] = color;
-        vramaddress[(x0 + x)*WIDTH + y0 - y] = color;
+        vramaddress[x0 + x + (y0 + y) * WIDTH] = color;
+        vramaddress[x0 + y + (y0 + x) * WIDTH] = color;
+        vramaddress[x0 - y + (y0 + x) * WIDTH] = color;
+        vramaddress[x0 - x + (y0 + y) * WIDTH] = color;
+        vramaddress[x0 - x + (y0 - y) * WIDTH] = color;
+        vramaddress[x0 - y + (y0 - x) * WIDTH] = color;
+        vramaddress[x0 + y + (y0 - x) * WIDTH] = color;
+        vramaddress[x0 + x + (y0 - y) * WIDTH] = color;
 
         if (err <= 0)
         {
