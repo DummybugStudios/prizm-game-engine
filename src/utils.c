@@ -154,14 +154,24 @@ void fatal_error(char *message)
 
 void debug_print(char *fmt, ...)
 {
-    locate_OS(1,1);
     char debug[255];
-
     va_list args;
     va_start(args, fmt);
     vsprintf(debug, fmt, args);
     va_end(args);
-    Print_OS(debug, 0,0);
+
+    int x = 1;
+    int y = 20;
+    PrintMiniMini(&x, &y, debug, 0, TEXT_COLOR_BLACK, 0);
+}
+
+void breakpoint (){
+    int key;
+    int x = 1;
+    int y = LCD_HEIGHT_PX - 50;
+    PrintMiniMini(&x, &y, "Hit Breakpoint!", 0,TEXT_COLOR_RED,0);
+    Bdisp_PutDisp_DD();
+    GetKey(&key);
 }
 
 

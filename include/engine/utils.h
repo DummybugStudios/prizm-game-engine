@@ -17,12 +17,15 @@ bool isIntersecting(Collider *obj1, Collider *obj2);
 // CASIO specific utilities
 
 #ifdef __SH4A__
+#include <stdio.h>
 
 int key_pressed(int basic_keycode);
 
 void fatal_error(char *message);
 
 void debug_print(char *fmt, ...);
+
+void breakpoint();
 
 #endif // __SH4A__
 

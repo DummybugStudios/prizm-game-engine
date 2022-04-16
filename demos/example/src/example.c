@@ -76,13 +76,6 @@ int main(void){
             draw_collider(&colliders[i]);
         }
 
-        // TODO: make print debugging a utility function
-        // char debug[255];
-        // sprintf(debug, "%f",0.2);
-        // locate_OS(1,1);
-        // Print_OS(debug, 0,0);
-        // PrintXY(1,1, "  Hello world", 0, 0);
-
         
         if(key_pressed(KEY_PRGM_MENU)){
             int key;
