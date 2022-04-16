@@ -64,6 +64,10 @@ int main(void){
 
         colliders[i].y =10;
         // colliders[i].y = colliders[i].y < 0 ? 0 : colliders[i].y; 
+
+        // initialize colliders!
+        colliders[i].list.next = &colliders[i].list;
+        colliders[i].list.prev = &colliders[i].list;
     }
     init_uniform_grid();
     
@@ -75,7 +79,6 @@ int main(void){
         { 
             draw_collider(&colliders[i]);
         }
-
         
         if(key_pressed(KEY_PRGM_MENU)){
             int key;
