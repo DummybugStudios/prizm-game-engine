@@ -34,7 +34,7 @@ MKG3AFLAGS := -n basic:Sid -i uns:../unselected.bmp -i sel:../selected.bmp
 CFLAGS	= -Os -Wall $(MACHDEP) $(INCLUDE) -ffunction-sections -fdata-sections -g -Wno-unused-function
 CXXFLAGS	=	$(CFLAGS)
 
-LDFLAGS	= $(MACHDEP) -T$(FXCGSDK)/toolchain/prizm.x -Wl,-static -Wl,-gc-sections# -Wl,-verbose
+LDFLAGS	= $(MACHDEP) -T$(LINKSCRIPT) -Wl,-static -Wl,-gc-sections# -Wl,-verbose
 
 #---------------------------------------------------------------------------------
 # any extra libraries we wish to link with the project
@@ -60,6 +60,8 @@ export VPATH	:=	$(foreach dir,$(SOURCES),$(CURDIR)/$(dir)) \
 					$(foreach dir,$(DATA),$(CURDIR)/$(dir))
 
 export DEPSDIR	:=	$(CURDIR)/$(BUILD)
+
+export LINKSCRIPT := $(FXCGSDK)/toolchain/prizm.x
 
 #---------------------------------------------------------------------------------
 # automatically build a list of object files for our project
@@ -101,7 +103,7 @@ export OUTPUT	:=	$(CURDIR)/$(TARGET)
 
 export ENGINE 	:= $(abspath ../../lib/libengine.a)
 
-.PHONY: all clean libengine
+.PHONY: all clean libengine changeLinkScript
 
 #---------------------------------------------------------------------------------
 all: $(BUILD)
@@ -118,6 +120,14 @@ clean:
 	$(call rm,$(OUTPUT).g3a)
 
 #---------------------------------------------------------------------------------
+elf: | changeLinkScript all
+
+# You need to create this file yourself for now.
+# Copy the prizm.x file and remove the first line that makes the output a flat binary
+changeLinkScript:
+	$(eval export LINKSCRIPT := $(FXCGSDK)/toolchain/prizm_elf.x)
+#---------------------------------------------------------------------------------
+
 else
 
 DEPENDS	:=	$(OFILES:.o=.d)
