@@ -22,6 +22,8 @@ int key_pressed(int basic_keycode);
 
 void fatal_error(char *message);
 
+void debug_print(char *fmt, ...);
+
 #endif // __SH4A__
 
 #endif

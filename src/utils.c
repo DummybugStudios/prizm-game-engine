@@ -121,6 +121,7 @@ bool isIntersecting(Collider *first, Collider *second)
 
 #include <fxcg/display.h>
 #include <fxcg/keyboard.h>
+#include <stdarg.h>
 
 // function stolen from the libfxcg examples. Don't know why they don't make this a library function.
 int key_pressed(int basic_keycode){
@@ -149,6 +150,18 @@ void fatal_error(char *message)
         }
         Bdisp_PutDisp_DD(); 
     }
+}
+
+void debug_print(char *fmt, ...)
+{
+    locate_OS(1,1);
+    char debug[255];
+
+    va_list args;
+    va_start(args, fmt);
+    vsprintf(debug, fmt, args);
+    va_end(args);
+    Print_OS(debug, 0,0);
 }
 
 
