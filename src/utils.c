@@ -1,7 +1,12 @@
+#ifndef __SH4A__
+// standard library assert for fxcg does not work
 #include <assert.h>
+#endif 
+
 #include <engine/utils.h>
 #include <engine/collider.h>
 #include <engine/vector.h>
+
 
 static inline float square(float a)
 {
@@ -123,6 +128,9 @@ bool isIntersecting(Collider *first, Collider *second)
 #include <fxcg/keyboard.h>
 #include <stdarg.h>
 
+#define STB_SPRINTF_IMPLEMENTATION
+#include "stb_sprintf.h" // for much better sprintf
+
 // function stolen from the libfxcg examples. Don't know why they don't make this a library function.
 int key_pressed(int basic_keycode){
     const unsigned short* keyboard_register = (unsigned short*)0xA44B0000;
@@ -134,12 +142,19 @@ int key_pressed(int basic_keycode){
     return (0 != (keyboard_register[word] & 1<<bit));
 }
 
-void fatal_error(char *message)
+void fatal_error(char *fmt, ...)
 {
+
+    char message[255];
+    va_list args;
+    va_start(args, fmt);
+    stbsp_vsnprintf(message, sizeof(message), fmt, args);
+    va_end(args);
+
     Bdisp_AllClr_VRAM();
     int x = 0;
     int y = 0; 
-    PrintMini(&x, &y, message, 0x02, -1,0,0,1,0,1,0);
+    PrintMiniMini(&x, &y, message, 0, TEXT_COLOR_BLACK,0);
     for (;;)
     { 
         if (key_pressed(KEY_PRGM_MENU))
@@ -157,7 +172,7 @@ void debug_print(char *fmt, ...)
     char debug[255];
     va_list args;
     va_start(args, fmt);
-    vsprintf(debug, fmt, args);
+    stbsp_vsnprintf(debug, sizeof(debug), fmt, args);
     va_end(args);
 
     int x = 1;

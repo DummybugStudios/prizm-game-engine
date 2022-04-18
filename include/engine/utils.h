@@ -21,11 +21,17 @@ bool isIntersecting(Collider *obj1, Collider *obj2);
 
 int key_pressed(int basic_keycode);
 
-void fatal_error(char *message);
+void fatal_error(char *fmt, ...);
 
 void debug_print(char *fmt, ...);
 
 void breakpoint();
+
+#ifndef NDEBUG
+#define assert(condition) if (!(condition)) fatal_error("Assertion '" #condition "' failed");
+#else
+#define assert(condition)
+#endif
 
 #endif // __SH4A__
 
