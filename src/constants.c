@@ -1,4 +1,6 @@
 #include <engine/constants.h>
+#include <engine/hgrid.h>
+#include <engine/uniform_grid_collision.h>
 
 #ifdef __SH4A__
 
@@ -9,6 +11,8 @@ void init_engine()
 {
     vramaddress = (color_t *) GetVRAMAddress();
     last_tick = RTC_GetTicks();
+    init_hgrid();
+    init_uniform_grid();
 }
 
 #else

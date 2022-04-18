@@ -8,7 +8,7 @@
 #include <stdlib.h>
 #include <math.h> 
 
-#include <engine/hgrid.h>
+#include <engine/basic_collision.h>
 #include <engine/collider.h>
 #include <engine/constants.h>
 #include <engine/drawing.h>
@@ -34,12 +34,11 @@ void update_objects(Collider *colliders)
             colliders[i].vy *= -1;
         }
     }
-    detect_hgrid_collision(colliders);
+    detect_basic_collision(colliders);   
 }
 
 int main(void){
     init_engine();
-    init_hgrid();
 
     Bdisp_EnableColor(1);
     sys_srand(RTC_GetTicks());
@@ -57,7 +56,6 @@ int main(void){
     colliders[0].list.next = &colliders[0].list;
     colliders[0].list.prev = &colliders[0].list;
 
-    add_to_hgrid(&colliders[0]);
     // rest of the balls
     for (int i = 1; i < OBJECTS; i++)
     {
@@ -74,7 +72,6 @@ int main(void){
         // initialize colliders!
         colliders[i].list.next = &colliders[i].list;
         colliders[i].list.prev = &colliders[i].list;
-        add_to_hgrid(&colliders[i]);
     }
     
     for(;;){
