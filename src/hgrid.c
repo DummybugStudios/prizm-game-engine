@@ -3,9 +3,13 @@
 #include <engine/constants.h>
 
 #include <stdio.h>
-#include <assert.h>
 #include <math.h>
 #include <stdbool.h>
+
+#ifndef __SH4A__
+// FXCG SDK's libc doesn't have the correct assert but engine/utils.h does
+#include <assert.h>
+#endif
 
 #define MAX(a,b) ((a)>(b)?(a):(b));
 
@@ -13,6 +17,21 @@ Hgrid hgrid  = {
     .occupiedLevelsMask = 0,
     .tick = 0
 };
+
+#ifdef __SH4A__
+// math.h in libfxcg doesn't have these functions and gcc doesn't provide them either.
+// this definition is technically not correct since
+// it doesn't have the expected behaviour for negative numbers. But it works well enough for now.
+static inline float ceilf(float num)
+{
+    return (int)(num + 0.3*3+0.1);
+}
+
+static inline float floorf(float num)
+{
+    return (int) num;
+}
+#endif
 
 void init_hgrid()
 {
@@ -26,11 +45,11 @@ void init_hgrid()
 }
 
 // TODO: look into hash functions more?
-int compute_hash_index(int x, int y, int level)
+unsigned int compute_hash_index(int x, int y, int level)
 {
-    const long int h1 = 0x8da6b343; // Large multiplicative constants;
-    const long int h2 = 0xd8163841; // here arbitrarily chosen primes
-    const long int h3 = 0xcb1ab31f;
+    const long unsigned int h1 = 0x8da6b343; // Large multiplicative constants;
+    const long unsigned int h2 = 0xd8163841; // here arbitrarily chosen primes
+    const long unsigned int h3 = 0xcb1ab31f;
 
     return (h1 * x + h2 * y + h3 * level) % NUM_BUCKETS; 
 
@@ -40,18 +59,23 @@ void add_to_hgrid(Collider *object)
 {
     int level;
     float size = MIN_CELL_SIZE;
-    float diameter = MAX(object->collider.rect.width, object->collider.rect.height);
+
+    // wiill throw an error on the assert
+    float diameter = HGRID_MAX_LEVELS*CELL_TO_CELL_RATIO*MIN_CELL_SIZE+50;
+    
+    if (object->type == CIRCLE_COLLIDER)
+        diameter = (int)ceilf(object->collider.circle.radius) << 1;
+    else if (object->type == BOX_COLLIDER)
+        diameter = MAX(object->collider.rect.width, object->collider.rect.height);
 
     for(level = 0; diameter > size; level++)
         size *= CELL_TO_CELL_RATIO;
     
     // This shouldn't happen
     assert(level < HGRID_MAX_LEVELS);
-
-    int bucket = compute_hash_index((object->x/size), (object->y/size), level);
+    unsigned int bucket = compute_hash_index((object->x/size), (object->y/size), level);
     // printf("bucket-chosen: %d, x: %d, y: %d\n", bucket,object->rect.x, object->rect.y);
     object->level = level;
-
     //TODO: Do you have to remove it first?
     list_add(&object->list, &hgrid.objectBucket[bucket]);
     hgrid.occupiedLevelsMask |= (1 << level);
@@ -82,7 +106,12 @@ void check_hgrid_collision(Collider *object)
         // check if current list is empty 
         if (! (occupiedLevelsMask & 1)) continue;
 
-        float delta = MAX(object->collider.rect.width, object->collider.rect.height);
+        float delta = 0;
+        if (object->type == CIRCLE_COLLIDER)
+            delta = (int)ceilf(object->collider.circle.radius) << 1;
+        else if (object->type == BOX_COLLIDER)
+            delta = MAX(object->collider.rect.width, object->collider.rect.height);
+
         int x1 = (int) clamp(floorf((object->x - delta) / size), 0, WIDTH);
         int y1 = (int) clamp(floorf((object->y - delta) / size), 0, HEIGHT);
 
@@ -107,6 +136,7 @@ void check_hgrid_collision(Collider *object)
                     if (!isIntersecting(object, obj)) continue;
                     object->isColliding = true;
                     obj->isColliding = true;
+                    handle_collision_physics(object, obj);
                     return;
                 }
             }

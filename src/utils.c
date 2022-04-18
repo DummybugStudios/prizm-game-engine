@@ -129,6 +129,7 @@ bool isIntersecting(Collider *first, Collider *second)
 #include <stdarg.h>
 
 #define STB_SPRINTF_IMPLEMENTATION
+#define STB_SPRINTF_NOUNALIGNED
 #include "stb_sprintf.h" // for much better sprintf
 
 // function stolen from the libfxcg examples. Don't know why they don't make this a library function.
@@ -180,11 +181,15 @@ void debug_print(char *fmt, ...)
     PrintMiniMini(&x, &y, debug, 0, TEXT_COLOR_BLACK, 0);
 }
 
-void breakpoint (){
+void breakpoint (char *name){
     int key;
     int x = 1;
     int y = LCD_HEIGHT_PX - 50;
-    PrintMiniMini(&x, &y, "Hit Breakpoint!", 0,TEXT_COLOR_RED,0);
+
+    char debug[255];
+    stbsp_snprintf(debug, sizeof(debug), "Hit Breakpoint: %s",name);
+
+    PrintMiniMini(&x, &y, debug, 0,TEXT_COLOR_RED,0);
     Bdisp_PutDisp_DD();
     GetKey(&key);
 }

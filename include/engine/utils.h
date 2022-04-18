@@ -17,7 +17,6 @@ bool isIntersecting(Collider *obj1, Collider *obj2);
 // CASIO specific utilities
 
 #ifdef __SH4A__
-#include <stdio.h>
 
 int key_pressed(int basic_keycode);
 
@@ -25,14 +24,17 @@ void fatal_error(char *fmt, ...);
 
 void debug_print(char *fmt, ...);
 
-void breakpoint();
+void breakpoint(char *name);
 
 #ifndef NDEBUG
 #define assert(condition) if (!(condition)) fatal_error("Assertion '" #condition "' failed");
 #else
 #define assert(condition)
-#endif
+#endif // NDEBUG
 
+# else // avoid issues in the SDL-Graphics project
+static inline void breakpoint(char *name){};
 #endif // __SH4A__
+
 
 #endif
