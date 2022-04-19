@@ -28,6 +28,8 @@ static inline float square_dist_point_rect(Collider *rect, float x, float y)
     return sqDist;
 }
 
+
+// FIXME: This DOES NOT work with rectangle circle collisions
 void handle_collision_physics(Collider *a, Collider*b)
 {
     //TODO: make it work with all the colliders
@@ -35,11 +37,12 @@ void handle_collision_physics(Collider *a, Collider*b)
     float m2 = 1;
 
     // method credits to https://www.vobarian.com/collisions/2dcollisions2.pdf
-    Vector normal = {
+    Vector distance = {
             .x = b->x - a->x,
             .y = b->y - a->y,
     };
-    normal = normalize(normal);
+
+    Vector normal = normalize(distance);
 
     Vector tangent = {
             -normal.y,
@@ -84,6 +87,32 @@ void handle_collision_physics(Collider *a, Collider*b)
 
     b->vx = vel_b_new.x;
     b->vy = vel_b_new.y;
+
+    // solve for time when the objects are separate
+    // d = x2 - x1
+    // d = t(v2 - v1) + (x2 - x1)
+    // t = (d - (x2 - x1)) / (v2 - v1);
+    Vector pos_a = {a->x, a->y};
+    Vector pos_b = {b->x, b->y};
+
+    float n_pos_a = dot(normal, pos_a);
+    float n_pos_b = dot(normal, pos_b);
+
+    float vel_diff = -n_vel_b + n_vel_a;
+
+    float d = a->collider.circle.radius + b->collider.circle.radius;
+    if (square(d) - sq_magnitude(distance) < 1 || fabs(vel_diff) < 0.1)
+        return;
+
+
+    float t =  (d - (n_pos_b - n_pos_a)) / vel_diff; 
+
+
+
+    a->x += t * (-vel_a.x + vel_a_new.x);
+    a->y += t * (-vel_a.y + vel_a_new.y);
+    b->x += t * (-vel_b.x + vel_b_new.x);
+    b->y += t * (-vel_b.y + vel_b_new.y);
 }
 
 bool isIntersecting(Collider *first, Collider *second)
