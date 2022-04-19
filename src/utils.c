@@ -29,6 +29,18 @@ static inline float square_dist_point_rect(Collider *rect, float x, float y)
 }
 
 
+static inline Vector closest_point_AABB(Collider *rect, float x, float y)
+{
+    Vector ret = {x,y};
+    if (x < rect->x) ret.x = rect->x;
+    if (x > rect->x + rect->collider.rect.width) ret.x = rect->x + rect->collider.rect.width;
+
+    if (y < rect->y) ret.y = rect->y;
+    if (y > rect->y + rect->collider.rect.height) ret.y = rect->y + rect->collider.rect.height;
+
+    return ret;
+}
+
 // FIXME: This DOES NOT work with rectangle circle collisions
 void handle_collision_physics(Collider *a, Collider*b)
 {
@@ -41,6 +53,31 @@ void handle_collision_physics(Collider *a, Collider*b)
             .x = b->x - a->x,
             .y = b->y - a->y,
     };
+
+    // FIXME: this doesn't only apply to circles against AABBs.
+    // AABBs also need this
+    if (a->type + b->type == 1)
+    {
+        Collider *rect, *circle;
+
+        if (a->type == BOX_COLLIDER)
+        {
+            rect = a;
+            circle = b;
+        }
+        else
+        {
+            rect = b;
+            circle = a;
+        }
+
+        Vector closestPoint = closest_point_AABB(rect, circle->x, circle->y);
+        
+        // yo idk what to do about this man but it crashes otherwise
+        if (closestPoint.x == circle->x && closestPoint.y == circle->y) return;
+        distance.x = circle->x - closestPoint.x;
+        distance.y = circle->y - closestPoint.y;
+    }
 
     Vector normal = normalize(distance);
 
@@ -88,6 +125,9 @@ void handle_collision_physics(Collider *a, Collider*b)
     b->vx = vel_b_new.x;
     b->vy = vel_b_new.y;
 
+    // If both not circles dont' do continuous collision detection
+    if (a->type + b->type < 2) return;
+
     // solve for time when the objects are separate
     // d = x2 - x1
     // d = t(v2 - v1) + (x2 - x1)
@@ -99,7 +139,6 @@ void handle_collision_physics(Collider *a, Collider*b)
     float n_pos_b = dot(normal, pos_b);
 
     float vel_diff = -n_vel_b + n_vel_a;
-
     float d = a->collider.circle.radius + b->collider.circle.radius;
     if (square(d) - sq_magnitude(distance) < 1 || fabs(vel_diff) < 0.1)
         return;
