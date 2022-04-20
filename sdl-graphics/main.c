@@ -5,15 +5,17 @@
 
 #include <engine/constants.h>
 #include <engine/collider.h>
-#include <engine/utils.h> // TODO: maybe not needed
+#include <engine/utils.h>
+
+#include <engine/basic_collision.h> 
 #include <engine/uniform_grid_collision.h>
 #include <engine/hgrid.h>
+
 #include <SDL2_gfxPrimitives.h>
 
 #define SAMPLE_SIZE 200
 
 SDL_Window *window;
-
 
 // Quickly render square
 void drawObject(SDL_Renderer* renderer, Collider *collider)
@@ -42,42 +44,6 @@ void drawObject(SDL_Renderer* renderer, Collider *collider)
     };
 }
 
-// BASIC collision detection
-void detectCollisions(Collider *objectList)
-{
-    bool collisions[OBJECTS];
-    memset(collisions, false, sizeof(collisions)); 
-    for (int i = 0; i < OBJECTS; i++)
-    {
-        // skip if it's already colliding
-        if (collisions[i])
-            continue;
-
-        bool found = false;
-        for (int j = 0; j < OBJECTS; j++)
-        {
-            if (i == j)
-                continue;
-
-            if (isIntersecting(&objectList[i], &objectList[j]))
-            {
-                collisions[i] = collisions[j] = true;
-                objectList[i].isColliding = true;
-                objectList[j].isColliding = true;
-
-                // find the new velocities
-
-                found = true;
-                break;
-            }
-        } // for j
-
-        if (!found)
-            objectList[i].isColliding = false;
-
-    } // for i
-}
-
 // Basic Physics Update
 void updateObjects(Collider *objectList)
 {
@@ -99,8 +65,8 @@ void updateObjects(Collider *objectList)
             objectList[i].vx *= -1;
         }   
     }
-//     detectCollisions(objectList);
-     detect_uniform_grid_collision(objectList);
+    detect_basic_collision(objectList);
+    //  detect_uniform_grid_collision(objectList);
 //    detect_hgrid_collision(objectList);
 }
 
@@ -108,7 +74,7 @@ void updateObjects(Collider *objectList)
 int main(int argc, char **argv)
 {
     enableBreakpoints = false; 
-    srand(0);
+    srand(2);
     // Initialise SDL2
     if (SDL_Init(SDL_INIT_EVERYTHING) < 0)
     {
@@ -131,42 +97,61 @@ int main(int argc, char **argv)
         exit(-1); 
     }
 
-    init_hgrid();
-    // make 5 objects
-    Collider *objects = (Collider *)malloc(OBJECTS * sizeof(Collider));
-    for (int i = 0; i < OBJECTS; i++)
-    {
-        // initially all lists are empty.
-        objects[i].list.next = &objects[i].list;
-        objects[i].list.prev = &objects[i].list;
-
-        if (i % 2) {
-            objects[i].type = CIRCLE_COLLIDER;
-            objects[i].collider.circle.radius = 20;
+    Collider objects[OBJECTS];
+    // make box
+    Collider box = {
+        .list = LIST_HEAD_INIT(box.list),
+        .type = BOX_COLLIDER,
+        .physics = STATIC,
+        .r = 255, .g = 0, .b = 0,
+        .vx = 0, .vy =0,
+        .x = 10, .y = 10,
+        .collider = {
+            .rect = {
+                .width = 80,
+                .height = 600,
+            }
         }
-        else {
-            objects[i].type = BOX_COLLIDER;
-            objects[i].collider.rect.height = objects[i].collider.rect.width = 40;
+    };
+
+    Collider box2 = {
+        .list = LIST_HEAD_INIT(box.list),
+        .type = BOX_COLLIDER,
+        .physics = STATIC,
+        .r = 255, .g = 0, .b = 0,
+        .vx = 0, .vy =0,
+        .x = 400, .y = 10,
+        .collider = {
+            .rect = {
+                .width = 80,
+                .height = 600,
+            }
         }
+    };
 
-        objects[i].r = 255;
-        objects[i].g = objects[i].b = 0;
-
-        objects[i].vx = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
-        objects[i].vy = (rand() % 2 == 0 ? 1 : -1) * (rand() % 40 + 1) / 10.0f;
-        objects[i].x = rand() % WIDTH;
-        objects[i].y = rand() % HEIGHT;
-
-        objects[i].isColliding = false;
-        add_to_hgrid(&objects[i]);
-
-    }
+    Collider circle = {
+        .list = LIST_HEAD_INIT(circle.list),
+        .type = CIRCLE_COLLIDER,
+        .physics = DYNAMIC,
+        .r = 0, .g = 255, .b =0,
+        .vx = -3, .vy = 1,
+        .x = 200, .y = 10,
+        .collider = {
+            .circle = {
+                .radius = 20
+            }
+        }
+    };
+    objects[0] = box;
+    objects[1] = circle;
+    objects[2] = box2;
 
     init_uniform_grid();
     
     clock_t start, end;
     double avg_time = 0;
     // infinite loop but keep track of iteration for time used
+    int speed = 300;
     for (int j = 0; j >= 0;)
     {
         SDL_SetRenderDrawColor(renderer, 255,255,255,255);
@@ -210,12 +195,16 @@ int main(int argc, char **argv)
                 {
                     enableBreakpoints = !enableBreakpoints;
                 }
+                else if (event.key.keysym.scancode == SDL_SCANCODE_SPACE)
+                {
+                    speed = speed == 16 ? 300 : 16;  
+                }
             }
 
         }
         
         SDL_RenderPresent(renderer);
-        SDL_Delay(16);
+        SDL_Delay(speed);
     }
 
     return 0;

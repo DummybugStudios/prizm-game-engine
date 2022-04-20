@@ -45,8 +45,8 @@ static inline Vector closest_point_AABB(Collider *rect, float x, float y)
 void handle_collision_physics(Collider *a, Collider*b)
 {
     //TODO: make it work with all the colliders
-    float m1 = 1;
-    float m2 = 1;
+    float m1 = a->physics == STATIC ? 1e8: 1.0f;
+    float m2 = b->physics == STATIC ? 1e8: 1.0f;
 
     // method credits to https://www.vobarian.com/collisions/2dcollisions2.pdf
     Vector distance = {
@@ -72,7 +72,7 @@ void handle_collision_physics(Collider *a, Collider*b)
         }
 
         Vector closestPoint = closest_point_AABB(rect, circle->x, circle->y);
-        
+
         // yo idk what to do about this man but it crashes otherwise
         if (closestPoint.x == circle->x && closestPoint.y == circle->y) return;
         distance.x = circle->x - closestPoint.x;

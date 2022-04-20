@@ -11,6 +11,13 @@ typedef enum ColliderType
     CIRCLE_COLLIDER
 } ColliderType;
 
+typedef enum PhsyicsType
+{
+    STATIC,
+    DYNAMIC,
+    EFFECTOR
+} PhsyicsType;
+
 typedef struct BoxCollider {
     float width;
     float height;
@@ -24,6 +31,7 @@ typedef struct Collider
 {
     list_head list;
     ColliderType type;
+    PhsyicsType physics;
 
     int r;
     int g;

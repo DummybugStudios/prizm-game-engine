@@ -3,7 +3,7 @@
 
 // Heavily inspired by the linux kernel implementation of linked lists
 
-// #define LIST_HEAD_INIT(name) { &(name), &(name) }
+#define LIST_HEAD_INIT(name) { &(name), &(name) }
 
 typedef struct list_head 
 {

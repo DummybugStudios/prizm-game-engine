@@ -4,7 +4,7 @@ LDFLAGS = $(shell pkg-config --libs-only-L sdl2) $(shell pkg-config --libs-only-
 LDLIBS  = $(shell pkg-config --libs-only-l sdl2) $(shell pkg-config --libs-only-l SDL2_gfx) -lm
 
 # TODO: fix this stupid ass method please
-CFILES := hgrid.c uniform_grid_collision.c utils.c constants.c
+CFILES := hgrid.c uniform_grid_collision.c utils.c constants.c basic_collision.c
 CFILES := $(addprefix ../src/, $(CFILES))
 CFILES := $(wildcard *.c) $(CFILES)
 
