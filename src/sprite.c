@@ -4,6 +4,7 @@
 #include <fxcg/file.h> 
 #include <fxcg/display.h>
 #include <engine/sprite.h> 
+#include <engine/utils.h>
 #include <string.h>
 
 #define STB_IMAGE_IMPLEMENTATION
@@ -75,13 +76,8 @@ void drawSprite(Sprite *sprite)
             uint8_t red   = sprite->data[cols*3 + rows*3*sprite->width];
             uint8_t green = sprite->data[cols*3 + rows*3*sprite->width+1];
             uint8_t blue  = sprite->data[cols*3 + rows*3*sprite->width+2];
-
-            // convert rgb888 to rgb565 
-            uint16_t r = (red >> 3) << 11;
-            uint16_t g = (green >> 2) << 5; 
-            uint16_t b = blue >> 3;
-        
-            vramaddress[cols + rows*LCD_WIDTH_PX] = (uint16_t)(r | g | b);
+            
+            vramaddress[cols + rows*LCD_WIDTH_PX] = rgb565(red, green, blue);
         }
     }
 }
