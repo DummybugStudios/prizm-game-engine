@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <engine/drawing.h>
 #include <fxcg/display.h>
-#include <engine/constants.h> 
+#include <engine/constants.h>
+#include <engine/utils.h>
 
 void draw_rectangle_filled(int x, int y, int width, int height, int color)
 {
@@ -105,16 +106,17 @@ void draw_collider(Collider *collider)
             collider->y,
             collider->collider.rect.width,
             collider->collider.rect.height,
-            (0x3f << 5));
+            rgb565(collider->r, collider->g, collider->b)
+        );
 
         break;
 
         case CIRCLE_COLLIDER:
-        draw_circle(
+        draw_circle_filled(
             collider->x,
             collider->y,
             collider->collider.circle.radius,
-            0x3f << 5
+            rgb565(collider->r, collider->g, collider->b)
         );
         break;
     }

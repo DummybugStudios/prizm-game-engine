@@ -24,9 +24,12 @@ void update_objects(Collider *colliders)
     delta = currentTime -last_tick;
     last_tick = currentTime;
 
-    float friction = 5e-4;
+    float friction = 1.2e-3;
     for (int i = 0; i < OBJECTS; i++)
     {
+
+        if (colliders[i].physics == STATIC) continue;
+
         colliders[i].x += delta * colliders[i].vx;
         colliders[i].y += delta * colliders[i].vy; 
 
@@ -50,7 +53,8 @@ void update_objects(Collider *colliders)
             colliders[i].vy *= -1;
         }
     }
-    detect_uniform_grid_collision(colliders);   
+    // detect_uniform_grid_collision(colliders);   
+    detect_basic_collision(colliders);
 }
 
 int main(void){
@@ -69,19 +73,19 @@ int main(void){
         .list = LIST_HEAD_INIT(cueball.list),
         .type = CIRCLE_COLLIDER,
         .physics = DYNAMIC,
-        .vx = 1, .vy = 0.1,
-        .x = 20, .y = HEIGHT /4,
+        .r = 200, .g = 200, .b = 200,
+        .vx = 2, .vy = 0.1,
+        .x = 30, .y = HEIGHT/4,
         .collider.circle = {
             .radius = radius
         }
     };
     colliders[0] = cueball;
-
     // place the balls
     int start_y = HEIGHT / 2;
     int start_x = 200;
-    float eps = 3;
-    for (int level = 1,i=1; i < OBJECTS; level++)
+    float ball_dist = 1;
+    for (int level = 1,i=1; i < 16; level++)
     {
         for (int y = level; y < level+level; y++,i++)
         {
@@ -90,19 +94,78 @@ int main(void){
                 .physics = DYNAMIC,
                 .type = CIRCLE_COLLIDER,
                 .collider.circle.radius = radius,
+                .r = 255, .g = 80, .b = 80,
                 // .vx = 0, .vy = 0,
-                .x = start_x + level*(radius*2 + eps),
+                .x = start_x + level*(radius*2 + ball_dist),
 
                 .y = start_y                      // position of the center ball
-                    - (radius + eps)   * (level-1)    // go up by by radius * level
-                    + (radius*2 + eps) * (y - level)  // go down by the diameter depending on ball no.
-
+                    - (radius + ball_dist)   * (level-1)    // go up by by radius * level
+                    + (radius*2 + ball_dist) * (y - level)  // go down by the diameter depending on ball no.
             };
             colliders[i] = ball;
         }
     };
 
+    // place the walls
+    const int wall_thickness = 20;
+    const int wall_spacing = 35;
 
+    // top walls
+    for (int i = 0; i < 2; i++)
+    {
+        Collider wall = {
+            .list = LIST_HEAD_INIT(wall.list),
+            .physics =STATIC,
+            .type = BOX_COLLIDER,
+            .collider.rect = {
+                .width = WIDTH-wall_spacing*2,
+                .height = wall_thickness,
+            },
+            .r = 0, .g = 0, .b = 255,
+            .x = wall_spacing, .y = i*(HEIGHT-wall_thickness),
+        };
+        colliders[i+16] = wall;
+    }
+
+    // bottom walls
+    for (int i =0; i < 2; i++)
+    {
+        Collider wall = {
+            .list = LIST_HEAD_INIT(wall.list),
+            .physics = STATIC,
+            .type = BOX_COLLIDER,
+            .collider.rect = {
+                .width = wall_thickness,
+                .height = HEIGHT - wall_spacing*2
+            },
+            .r = 0, .g = 0, .b = 255,
+            .x = i*(WIDTH-wall_thickness), .y = wall_spacing,
+        };
+        colliders[18+i] = wall;
+    }
+
+    // pot holes
+    float pot_rad = 15;
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            int x = pot_rad + i * (WIDTH - pot_rad*2);
+            int y = pot_rad + j * (HEIGHT- pot_rad*2);
+
+            Collider pothole = {
+                .list = LIST_HEAD_INIT(pothole.list),
+                .type = CIRCLE_COLLIDER,
+                .physics = STATIC,
+                .collider.circle = {
+                    .radius = pot_rad
+                },
+                .x = x, .y = y
+            };
+
+            colliders[20+i*2+j] = pothole;
+        }
+    }
 
     for(;;){
         Bdisp_AllClr_VRAM();
