@@ -15,20 +15,26 @@
 #include <engine/drawing.h>
 #include <engine/utils.h>
 
-int delta;
+
+int points = 0;
+void callback (Collider *a, Collider *b)
+{
+    points++;
+}
+
 void update_objects(Collider *colliders)
 {
     //TODO: What order should we do this in? 
 
     int currentTime = RTC_GetTicks();
-    delta = currentTime -last_tick;
+    int delta = currentTime -last_tick;
     last_tick = currentTime;
 
     float friction = 1.2e-3;
     for (int i = 0; i < OBJECTS; i++)
     {
 
-        if (colliders[i].physics == STATIC) continue;
+        if (colliders[i].physics == STATIC || colliders[i].physics == EFFECTOR) continue;
 
         colliders[i].x += delta * colliders[i].vx;
         colliders[i].y += delta * colliders[i].vy; 
@@ -54,7 +60,7 @@ void update_objects(Collider *colliders)
         }
     }
     // detect_uniform_grid_collision(colliders);   
-    detect_basic_collision(colliders);
+    detect_basic_collision(colliders, callbacks);
 }
 
 int main(void){
@@ -156,7 +162,7 @@ int main(void){
             Collider pothole = {
                 .list = LIST_HEAD_INIT(pothole.list),
                 .type = CIRCLE_COLLIDER,
-                .physics = STATIC,
+                .physics = EFFECTOR,
                 .collider.circle = {
                     .radius = pot_rad
                 },
@@ -174,6 +180,7 @@ int main(void){
         {
             draw_collider(&colliders[i]);
         }
+        debug_print("points: %d", points);
         if(key_pressed(KEY_PRGM_MENU)){
             int key;
             GetKey(&key);

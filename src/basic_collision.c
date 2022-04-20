@@ -3,7 +3,7 @@
 #include <engine/utils.h>
 #include <stdbool.h> 
 
-void detect_basic_collision(Collider *objectList)
+void detect_basic_collision(Collider *objectList, void (* callback)(Collider *, Collider *))
 {
     for (int i = 0; i < OBJECTS; i++)
         objectList[i].isColliding = false;
@@ -22,7 +22,14 @@ void detect_basic_collision(Collider *objectList)
             {
                 objectList[i].isColliding = true;
                 objectList[j].isColliding = true;
-                handle_collision_physics(&objectList[i], &objectList[j]);
+
+                if (objectList[i].physics == EFFECTOR || objectList[j].physics == EFFECTOR)
+                {
+                    if (callback)
+                        callback(&objectList[i], &objectList[j]);
+                }
+                else
+                    handle_collision_physics(&objectList[i], &objectList[j]);
                 break;
             }
         } // for j
