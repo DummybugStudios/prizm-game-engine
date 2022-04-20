@@ -9,18 +9,34 @@
 #include <math.h> 
 
 #include <engine/basic_collision.h>
+#include <engine/uniform_grid_collision.h>
 #include <engine/collider.h>
 #include <engine/constants.h>
 #include <engine/drawing.h>
 #include <engine/utils.h>
 
+int delta;
 void update_objects(Collider *colliders)
 {
     //TODO: What order should we do this in? 
+
+    int currentTime = RTC_GetTicks();
+    delta = currentTime -last_tick;
+    last_tick = currentTime;
+
+    float friction = 5e-4;
     for (int i = 0; i < OBJECTS; i++)
     {
-        colliders[i].x += colliders[i].vx;
-        colliders[i].y += colliders[i].vy; 
+        colliders[i].x += delta * colliders[i].vx;
+        colliders[i].y += delta * colliders[i].vy; 
+
+        colliders[i].vx -= delta*friction*colliders[i].vx;
+        colliders[i].vy -= delta*friction*colliders[i].vy;
+
+        if (fabs(colliders[i].vx) < 1e-2) colliders[i].vx = 0;
+        if (fabs(colliders[i].vy) < 1e-2) colliders[i].vx =0;
+        
+
         int radius = colliders[i].collider.circle.radius;
 
         if (colliders[i].x < radius || colliders[i].x > WIDTH - radius)
@@ -34,7 +50,7 @@ void update_objects(Collider *colliders)
             colliders[i].vy *= -1;
         }
     }
-    detect_basic_collision(colliders);   
+    detect_uniform_grid_collision(colliders);   
 }
 
 int main(void){
@@ -43,37 +59,51 @@ int main(void){
     Bdisp_EnableColor(1);
     sys_srand(RTC_GetTicks());
 
-    // Create colliders
+    // Create balls
     // FIXME: improve collider creation PLEASE
     Collider colliders[OBJECTS];
 
+    int radius = 10;
     // cue ball
-    colliders[0].type = CIRCLE_COLLIDER;
-    colliders[0].collider.circle.radius = 10;
-    colliders[0].x = colliders[0].collider.circle.radius*2*((OBJECTS-1)>>1);
-    colliders[0].y = HEIGHT >> 2;
-    colliders[0].vy = -3.0f;
-    colliders[0].list.next = &colliders[0].list;
-    colliders[0].list.prev = &colliders[0].list;
+    Collider cueball = {
+        .list = LIST_HEAD_INIT(cueball.list),
+        .type = CIRCLE_COLLIDER,
+        .physics = DYNAMIC,
+        .vx = 1, .vy = 0.1,
+        .x = 20, .y = HEIGHT /4,
+        .collider.circle = {
+            .radius = radius
+        }
+    };
+    colliders[0] = cueball;
 
-    // rest of the balls
-    for (int i = 1; i < OBJECTS; i++)
+    // place the balls
+    int start_y = HEIGHT / 2;
+    int start_x = 200;
+    float eps = 3;
+    for (int level = 1,i=1; i < OBJECTS; level++)
     {
-        colliders[i].type = CIRCLE_COLLIDER;
-        colliders[i].collider.circle.radius = 10;
-        colliders[i].level = 0;
+        for (int y = level; y < level+level; y++,i++)
+        {
+            Collider ball = {
+                .list = LIST_HEAD_INIT(ball.list),
+                .physics = DYNAMIC,
+                .type = CIRCLE_COLLIDER,
+                .collider.circle.radius = radius,
+                // .vx = 0, .vy = 0,
+                .x = start_x + level*(radius*2 + eps),
 
-        colliders[i].x = 20*i + 5;
-        // colliders[i].x = colliders[i].x < 0 ? 0 : colliders[i].x;
+                .y = start_y                      // position of the center ball
+                    - (radius + eps)   * (level-1)    // go up by by radius * level
+                    + (radius*2 + eps) * (y - level)  // go down by the diameter depending on ball no.
 
-        colliders[i].y =10;
-        // colliders[i].y = colliders[i].y < 0 ? 0 : colliders[i].y; 
+            };
+            colliders[i] = ball;
+        }
+    };
 
-        // initialize colliders!
-        colliders[i].list.next = &colliders[i].list;
-        colliders[i].list.prev = &colliders[i].list;
-    }
-    
+
+
     for(;;){
         Bdisp_AllClr_VRAM();
         update_objects(colliders);

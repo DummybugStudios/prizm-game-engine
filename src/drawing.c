@@ -6,12 +6,12 @@
 
 void draw_rectangle_filled(int x, int y, int width, int height, int color)
 {
-    int startpoint = (y-height)*LCD_WIDTH_PX + (x-width); 
+    int startpoint = x + y*LCD_WIDTH_PX; 
     for (int i = startpoint; i < startpoint+width; i++)
     { 
         for (int j = 0; j < height; j++)
         {
-            putpixel(x,y,color); 
+            putpixel(i,j,color); 
         }
     }
 }
@@ -105,8 +105,7 @@ void draw_collider(Collider *collider)
             collider->y,
             collider->collider.rect.width,
             collider->collider.rect.height,
-            0b0000011111100000 // green for now
-            );
+            (0x3f << 5));
 
         break;
 
