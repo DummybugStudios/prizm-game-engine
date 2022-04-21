@@ -24,6 +24,16 @@ void callback (Collider *a, Collider *b)
     points++;
 }
 
+enum Tag {
+    DEFAULT, // it's empty by default;
+    CUEBALL,
+    EIGHTBALL,
+    // Idk how to do solides and stripes
+    REDS,
+    BLUES,
+    POTHOLE,
+};
+
 int delta;
 void update_objects(Collider *colliders)
 {

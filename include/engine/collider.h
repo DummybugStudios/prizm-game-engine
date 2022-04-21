@@ -36,6 +36,8 @@ typedef struct Collider
     int r;
     int g;
     int b;
+    
+    int tag;    // custom tag that the user can put in here
     int level;  // for use by hash grid
     float vx;
     float vy;
