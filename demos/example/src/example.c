@@ -10,6 +10,8 @@
 
 #include <engine/basic_collision.h>
 #include <engine/uniform_grid_collision.h>
+#include <engine/hgrid.h>
+
 #include <engine/collider.h>
 #include <engine/constants.h>
 #include <engine/drawing.h>
@@ -22,12 +24,13 @@ void callback (Collider *a, Collider *b)
     points++;
 }
 
+int delta;
 void update_objects(Collider *colliders)
 {
     //TODO: What order should we do this in? 
 
     int currentTime = RTC_GetTicks();
-    int delta = currentTime -last_tick;
+    delta = currentTime -last_tick;
     last_tick = currentTime;
 
     float friction = 1.2e-3;
@@ -60,7 +63,8 @@ void update_objects(Collider *colliders)
         }
     }
     // detect_uniform_grid_collision(colliders);   
-    detect_basic_collision(colliders, callbacks);
+    detect_basic_collision(colliders, NULL);
+    // detect_hgrid_collision(colliders, NULL); 
 }
 
 int main(void){
@@ -180,7 +184,7 @@ int main(void){
         {
             draw_collider(&colliders[i]);
         }
-        debug_print("points: %d", points);
+        debug_print("delta: %d", delta);
         if(key_pressed(KEY_PRGM_MENU)){
             int key;
             GetKey(&key);

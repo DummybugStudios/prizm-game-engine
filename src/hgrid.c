@@ -90,7 +90,7 @@ void remove_from_hgrid(Collider *object)
     list_remove(&object->list);
 }
 
-void check_hgrid_collision(Collider *object)
+void check_hgrid_collision(Collider *object, void (* callback)(Collider *, Collider *))
 {
     if (object->isColliding) return;
     float size = MIN_CELL_SIZE;
@@ -136,7 +136,15 @@ void check_hgrid_collision(Collider *object)
                     if (!isIntersecting(object, obj)) continue;
                     object->isColliding = true;
                     obj->isColliding = true;
-                    handle_collision_physics(object, obj);
+
+                    if (obj->physics == EFFECTOR || object->physics == EFFECTOR)
+                    {
+                        if (callback) callback(object, obj);
+                    }
+                    else
+                    {
+                        handle_collision_physics(object, obj);
+                    }
                     return;
                 }
             }
@@ -144,7 +152,7 @@ void check_hgrid_collision(Collider *object)
     }
 }
 
-void detect_hgrid_collision(Collider* object_list)
+void detect_hgrid_collision(Collider* object_list, void (* callback)(Collider *, Collider *))
 {
     // FIXME: only re-add it if it has moved.
     // but in this case everything is moving so...?
@@ -157,7 +165,7 @@ void detect_hgrid_collision(Collider* object_list)
 
     for (int i = 0; i < OBJECTS; i++)
     {
-        check_hgrid_collision(&object_list[i]);
+        check_hgrid_collision(&object_list[i], callback);
     }
 }
 

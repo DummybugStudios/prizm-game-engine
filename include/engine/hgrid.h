@@ -2,7 +2,7 @@
 #define HGRID_H 
 #include <engine/collider.h>
 
-#define HGRID_MAX_LEVELS 4
+#define HGRID_MAX_LEVELS 6
 #define NUM_BUCKETS 200 // Todo: how many should it have? 
 
 #define MIN_CELL_SIZE 15.0f
@@ -20,6 +20,6 @@ void init_hgrid();
 
 void add_to_hgrid(Collider *object);
 
-void detect_hgrid_collision(Collider *object_list);
+void detect_hgrid_collision(Collider *object_list, void (* callback)(Collider *, Collider *));
 
 #endif
