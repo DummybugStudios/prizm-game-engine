@@ -3,6 +3,6 @@
 
 #include <engine/collider.h>
 
-void detect_basic_collision(Collider *objects, void (* callback)(Collider *, Collider *));
+void detect_basic_collision(void (* callback)(Collider *, Collider *));
 
 #endif

@@ -1,5 +1,6 @@
 #include <engine/collider.h>
 #include <engine/utils.h>
+#include <stdlib.h>
 
 ColliderCollection colliders = {};
 

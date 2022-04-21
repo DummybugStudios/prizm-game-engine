@@ -3,33 +3,37 @@
 #include <engine/utils.h>
 #include <stdbool.h> 
 
-void detect_basic_collision(Collider *objectList, void (* callback)(Collider *, Collider *))
+void detect_basic_collision(void (* callback)(Collider *, Collider *))
 {
-    for (int i = 0; i < OBJECTS; i++)
-        objectList[i].isColliding = false;
 
-    for (int i = 0; i < OBJECTS; i++)
+    unsigned int size = get_colliders_size();
+    for (int i = 0; i < size; i++)
+        get_collider(i)->isColliding = false;
+
+    for (int i = 0; i < size; i++)
     {
+        Collider *obj1 = get_collider(i); 
         // skip if it's already colliding
-        if (objectList[i].isColliding) continue;
+        if (obj1->isColliding) continue;
 
-        for (int j = 0; j < OBJECTS; j++)
+        for (int j = 0; j < size; j++)
         {
             if (i == j)
                 continue;
-
-            if (isIntersecting(&objectList[i], &objectList[j]))
+                
+            Collider *obj2 = get_collider(j);
+            if (isIntersecting(obj1,obj2))
             {
-                objectList[i].isColliding = true;
-                objectList[j].isColliding = true;
+                obj1->isColliding = true;
+                obj2->isColliding = true;
 
-                if (objectList[i].physics == TRIGGER || objectList[j].physics == TRIGGER)
+                if (obj1->physics == TRIGGER ||obj2->physics == TRIGGER)
                 {
                     if (callback)
-                        callback(&objectList[i], &objectList[j]);
+                        callback(obj1,obj2);
                 }
                 else
-                    handle_collision_physics(&objectList[i], &objectList[j]);
+                    handle_collision_physics(obj1,obj2);
                 break;
             }
         } // for j

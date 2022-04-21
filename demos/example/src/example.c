@@ -35,7 +35,7 @@ enum Tag {
 };
 
 int delta;
-void update_objects(Collider *colliders)
+void update_objects()
 {
     //TODO: What order should we do this in? 
 
@@ -44,36 +44,36 @@ void update_objects(Collider *colliders)
     last_tick = currentTime;
 
     float friction = 1.2e-3;
-    for (int i = 0; i < OBJECTS; i++)
+    for (int i = 0; i < get_colliders_size(); i++)
     {
+        Collider *object = get_collider(i);
+        if (object->physics == STATIC || object->physics == TRIGGER) continue;
 
-        if (colliders[i].physics == STATIC || colliders[i].physics == TRIGGER) continue;
+        object->x += delta * object->vx;
+        object->y += delta * object->vy; 
 
-        colliders[i].x += delta * colliders[i].vx;
-        colliders[i].y += delta * colliders[i].vy; 
+        object->vx -= delta*friction*object->vx;
+        object->vy -= delta*friction*object->vy;
 
-        colliders[i].vx -= delta*friction*colliders[i].vx;
-        colliders[i].vy -= delta*friction*colliders[i].vy;
-
-        if (fabs(colliders[i].vx) < 1e-2) colliders[i].vx = 0;
-        if (fabs(colliders[i].vy) < 1e-2) colliders[i].vx =0;
+        if (fabs(object->vx) < 1e-2) object->vx = 0;
+        if (fabs(object->vy) < 1e-2) object->vx =0;
         
 
-        int radius = colliders[i].collider.circle.radius;
+        int radius = object->collider.circle.radius;
 
-        if (colliders[i].x < radius || colliders[i].x > WIDTH - radius)
+        if (object->x < radius || object->x > WIDTH - radius)
         {
-            colliders[i].x = colliders[i].x < radius ? radius : WIDTH - radius-1;
-            colliders[i].vx *= -1;
+            object->x = object->x < radius ? radius : WIDTH - radius-1;
+            object->vx *= -1;
         }
-        if (colliders[i].y < radius || colliders[i].y > HEIGHT - radius)
+        if (object->y < radius || object->y > HEIGHT - radius)
         {
-            colliders[i].y = colliders[i].y < radius ? radius : HEIGHT - radius-1;
-            colliders[i].vy *= -1;
+            object->y = object->y < radius ? radius : HEIGHT - radius-1;
+            object->vy *= -1;
         }
     }
     // detect_uniform_grid_collision(colliders);   
-    detect_basic_collision(colliders, NULL);
+    detect_basic_collision(NULL);
     // detect_hgrid_collision(colliders, NULL); 
 }
 
@@ -83,7 +83,6 @@ int main(void){
 
     // Create balls
     // FIXME: improve collider creation PLEASE
-    Collider colliders[OBJECTS];
     create_colliders(24);
 
     // pot holes
@@ -106,7 +105,6 @@ int main(void){
                 .x = x, .y = y
             };
             add_collider(pothole);
-            colliders[i*2+j] = pothole;
         }
     }
 
@@ -124,7 +122,6 @@ int main(void){
         }
     };
     add_collider(cueball);
-    colliders[4] = cueball;
     // place the balls
     int start_y = HEIGHT / 2;
     int start_x = 200;
@@ -147,9 +144,8 @@ int main(void){
                     + (radius*2 + ball_dist) * (y - level)  // go down by the diameter depending on ball no.
             };
             add_collider(ball);
-            colliders[i] = ball;
         }
-    };
+    }
 
     // place the walls
     const int wall_thickness = 20;
@@ -170,7 +166,6 @@ int main(void){
             .x = wall_spacing, .y = i*(HEIGHT-wall_thickness),
         };
         add_collider(wall);
-        colliders[i+20] = wall;
     }
 
     // bottom walls
@@ -188,7 +183,6 @@ int main(void){
             .x = i*(WIDTH-wall_thickness), .y = wall_spacing,
         };
         add_collider(wall);
-        colliders[22+i] = wall;
     }
 
 
@@ -204,10 +198,10 @@ int main(void){
             draw_rectangle_filled(i*(WIDTH-wall_thickness),0,wall_thickness,HEIGHT,0);
         }
 
-        update_objects(colliders);
-        for (int i =0; i < OBJECTS; i++)
+        update_objects();
+        for (int i =0; i < get_colliders_size(); i++)
         {
-            draw_collider(&colliders[i]);
+            draw_collider(get_collider(i));
         }
         debug_print("delta: %d", delta);
         if(key_pressed(KEY_PRGM_MENU)){
