@@ -44,6 +44,7 @@ typedef struct Collider
     float x;
     float y;
     bool isColliding;
+    bool isDisabled;
 
     union collider {
         BoxCollider rect;
@@ -52,5 +53,37 @@ typedef struct Collider
 
 } Collider;
 
+
+// basically a worse implementation of std::vector
+typedef struct ColliderCollection
+{
+    unsigned int capacity;
+    unsigned int size;
+    Collider *data;
+} ColliderCollection;
+
+// A single set of colliders for the whole game
+// Maybe not the best solution but API gets more complicated the more flexible I try to make it
+// But this can be easily changed in the future
+extern  ColliderCollection colliders;
+
+void create_colliders(unsigned int size);
+
+int add_collider(Collider collider);
+
+void disable_collider(unsigned int n);
+
+void enable_collider(unsigned int n);
+
+// If you want to make more specific changes to the collider.
+Collider *get_collider(unsigned int n );
+
+// Should I provide direct access to the variables? Probably not.
+
+// Get capacity that was set at the start
+unsigned int get_colliders_limit();
+
+// Get the number of objects that are in there right now
+unsigned int get_colliders_size();
 
 #endif

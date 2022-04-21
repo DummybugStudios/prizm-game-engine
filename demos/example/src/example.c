@@ -79,13 +79,36 @@ void update_objects(Collider *colliders)
 
 int main(void){
     init_engine();
-
     Bdisp_EnableColor(1);
-    sys_srand(RTC_GetTicks());
 
     // Create balls
     // FIXME: improve collider creation PLEASE
     Collider colliders[OBJECTS];
+    create_colliders(24);
+
+    // pot holes
+    float pot_rad = 15;
+    for (int i = 0; i < 2; i++)
+    {
+        for (int j = 0; j < 2; j++)
+        {
+            int x = pot_rad + i * (WIDTH - pot_rad*2);
+            int y = pot_rad + j * (HEIGHT- pot_rad*2);
+
+            Collider pothole = {
+                .list = LIST_HEAD_INIT(pothole.list),
+                .type = CIRCLE_COLLIDER,
+                .physics = TRIGGER,
+                .collider.circle = {
+                    .radius = pot_rad
+                },
+                .tag = POTHOLE,
+                .x = x, .y = y
+            };
+            add_collider(pothole);
+            colliders[i*2+j] = pothole;
+        }
+    }
 
     int radius = 10;
     // cue ball
@@ -100,12 +123,13 @@ int main(void){
             .radius = radius
         }
     };
-    colliders[0] = cueball;
+    add_collider(cueball);
+    colliders[4] = cueball;
     // place the balls
     int start_y = HEIGHT / 2;
     int start_x = 200;
     float ball_dist = 1;
-    for (int level = 1,i=1; i < 16; level++)
+    for (int level = 1,i=5; i < 20; level++)
     {
         for (int y = level; y < level+level; y++,i++)
         {
@@ -122,6 +146,7 @@ int main(void){
                     - (radius + ball_dist)   * (level-1)    // go up by by radius * level
                     + (radius*2 + ball_dist) * (y - level)  // go down by the diameter depending on ball no.
             };
+            add_collider(ball);
             colliders[i] = ball;
         }
     };
@@ -144,7 +169,8 @@ int main(void){
             .r = 0, .g = 0, .b = 255,
             .x = wall_spacing, .y = i*(HEIGHT-wall_thickness),
         };
-        colliders[i+16] = wall;
+        add_collider(wall);
+        colliders[i+20] = wall;
     }
 
     // bottom walls
@@ -161,34 +187,23 @@ int main(void){
             .r = 0, .g = 0, .b = 255,
             .x = i*(WIDTH-wall_thickness), .y = wall_spacing,
         };
-        colliders[18+i] = wall;
+        add_collider(wall);
+        colliders[22+i] = wall;
     }
 
-    // pot holes
-    float pot_rad = 15;
-    for (int i = 0; i < 2; i++)
-    {
-        for (int j = 0; j < 2; j++)
-        {
-            int x = pot_rad + i * (WIDTH - pot_rad*2);
-            int y = pot_rad + j * (HEIGHT- pot_rad*2);
 
-            Collider pothole = {
-                .list = LIST_HEAD_INIT(pothole.list),
-                .type = CIRCLE_COLLIDER,
-                .physics = TRIGGER,
-                .collider.circle = {
-                    .radius = pot_rad
-                },
-                .x = x, .y = y
-            };
-
-            colliders[20+i*2+j] = pothole;
-        }
-    }
 
     for(;;){
-        Bdisp_AllClr_VRAM();
+        // Bdisp_AllClr_VRAM();
+        Bdisp_Fill_VRAM(rgb565(0,180,0),3);
+
+        // draw black rectangles around the edges
+        for (int i =0; i < 2; i++)
+        {
+            draw_rectangle_filled(0,i*(HEIGHT-wall_thickness),WIDTH,wall_thickness,0);
+            draw_rectangle_filled(i*(WIDTH-wall_thickness),0,wall_thickness,HEIGHT,0);
+        }
+
         update_objects(colliders);
         for (int i =0; i < OBJECTS; i++)
         {
