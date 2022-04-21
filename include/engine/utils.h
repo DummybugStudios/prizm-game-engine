@@ -38,11 +38,19 @@ void debug_print(char *fmt, ...);
 
 void breakpoint(char *name);
 
+// shady sqrt method i found on the internet
+static inline float sqrt(float num)
+{
+    const int result = 0x1fbb4000 + (*(int*)&num >> 1);
+    return *(float*)&result;
+}
+
 #ifndef NDEBUG
 #define assert(condition) if (!(condition)) fatal_error("Assertion '" #condition "' failed");
 #else
 #define assert(condition)
 #endif // NDEBUG
+
 
 # else // avoid issues in the SDL-Graphics project
 static inline void breakpoint(char *name){};

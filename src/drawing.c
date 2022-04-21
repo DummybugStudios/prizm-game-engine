@@ -57,43 +57,20 @@ void draw_circle (int x0, int y0, int radius,int color)
 
 }
 
-void draw_circle_filled(int x0, int y0, int radius,int color)
+void draw_circle_filled(int x0, int y0, int radius, int color)
 {
-    int x = radius - 1;
-    int y = 0;
-
-    int dx,dy;
-    dx = dy = 1;
-
-    int err = dx - (radius << 1);
-
-    while (x >= y)
+    int radius_sqr = radius*radius;
+    for (int x = -radius; x < 1; x++)
     {
-        draw_line(x0,y0,x0 + x, y0 + y,color);
-        draw_line(x0,y0,x0 + y, y0 + x,color);
-        draw_line(x0,y0,x0 - y, y0 + x,color);
-        draw_line(x0,y0,x0 - x, y0 + y,color);
-        draw_line(x0,y0,x0 - x, y0 - y,color);
-        draw_line(x0,y0,x0 - y, y0 - x,color);
-        draw_line(x0,y0,x0 + y, y0 - x,color);
-        draw_line(x0,y0,x0 + x, y0 - y,color);
-
-
-        if (err <= 0)
+        int height = (int) sqrt(radius_sqr - x*x);
+        for (int y = -height; y < 1; y++) 
         {
-            y++;
-            err += dy;
-            dy += 2;
-        }
-        
-        if (err > 0)
-        {
-            x--;
-            dx += 2;
-            err += dx - (radius << 1);
+            putpixel(x0+x, y0+y, color);
+            putpixel(x0+x, y0-y, color);
+            putpixel(x0-x, y0+y, color);
+            putpixel(x0-x, y0-y, color);
         }
     }
-
 }
 
 void draw_collider(Collider *collider)
