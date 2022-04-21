@@ -23,7 +23,7 @@ void detect_basic_collision(Collider *objectList, void (* callback)(Collider *, 
                 objectList[i].isColliding = true;
                 objectList[j].isColliding = true;
 
-                if (objectList[i].physics == EFFECTOR || objectList[j].physics == EFFECTOR)
+                if (objectList[i].physics == TRIGGER || objectList[j].physics == TRIGGER)
                 {
                     if (callback)
                         callback(&objectList[i], &objectList[j]);

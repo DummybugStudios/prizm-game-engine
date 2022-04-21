@@ -37,7 +37,7 @@ void update_objects(Collider *colliders)
     for (int i = 0; i < OBJECTS; i++)
     {
 
-        if (colliders[i].physics == STATIC || colliders[i].physics == EFFECTOR) continue;
+        if (colliders[i].physics == STATIC || colliders[i].physics == TRIGGER) continue;
 
         colliders[i].x += delta * colliders[i].vx;
         colliders[i].y += delta * colliders[i].vy; 
@@ -166,7 +166,7 @@ int main(void){
             Collider pothole = {
                 .list = LIST_HEAD_INIT(pothole.list),
                 .type = CIRCLE_COLLIDER,
-                .physics = EFFECTOR,
+                .physics = TRIGGER,
                 .collider.circle = {
                     .radius = pot_rad
                 },

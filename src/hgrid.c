@@ -137,7 +137,7 @@ void check_hgrid_collision(Collider *object, void (* callback)(Collider *, Colli
                     object->isColliding = true;
                     obj->isColliding = true;
 
-                    if (obj->physics == EFFECTOR || object->physics == EFFECTOR)
+                    if (obj->physics == TRIGGER || object->physics == TRIGGER)
                     {
                         if (callback) callback(object, obj);
                     }

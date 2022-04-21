@@ -15,7 +15,7 @@ typedef enum PhsyicsType
 {
     STATIC,
     DYNAMIC,
-    EFFECTOR
+    TRIGGER
 } PhsyicsType;
 
 typedef struct BoxCollider {
