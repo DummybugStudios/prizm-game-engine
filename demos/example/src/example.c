@@ -16,13 +16,9 @@
 #include <engine/constants.h>
 #include <engine/drawing.h>
 #include <engine/utils.h>
+#include <engine/vector.h>
 
 
-int points = 0;
-void callback (Collider *a, Collider *b)
-{
-    points++;
-}
 
 enum Tag {
     DEFAULT, // it's empty by default;
@@ -33,6 +29,20 @@ enum Tag {
     BLUES,
     POTHOLE,
 };
+
+int points = 0;
+void callback (Collider *a, Collider *b)
+{
+    points++;
+    Collider *pothole, *other;
+    
+    // assign pothole to the pothole and the other to the other
+    pothole = a->tag == POTHOLE ? a : b;
+
+    other = (Collider *) ((long) a - (long)pothole + (long)b);
+
+    other->isDisabled = true;
+}
 
 int delta;
 void update_objects()
@@ -73,7 +83,7 @@ void update_objects()
         }
     }
     // detect_uniform_grid_collision(colliders);   
-    detect_basic_collision(NULL);
+    detect_basic_collision(callback);
     // detect_hgrid_collision(colliders, NULL); 
 }
 
@@ -109,19 +119,24 @@ int main(void){
     }
 
     int radius = 10;
-    // cue ball
-    Collider cueball = {
-        .list = LIST_HEAD_INIT(cueball.list),
-        .type = CIRCLE_COLLIDER,
-        .physics = DYNAMIC,
-        .r = 200, .g = 200, .b = 200,
-        .vx = 2, .vy = 0.1,
-        .x = 30, .y = HEIGHT/4,
-        .collider.circle = {
-            .radius = radius
-        }
-    };
-    add_collider(cueball);
+    int cueball_index;
+
+    {
+        // cue ball
+        Collider cueball  = {
+            .list = LIST_HEAD_INIT(cueball.list),
+            .type = CIRCLE_COLLIDER,
+            .physics = DYNAMIC,
+            .r = 200, .g = 200, .b = 200,
+            .vx = 0, .vy = 0,
+            .x = 30, .y = HEIGHT/4,
+            .collider.circle = {
+                .radius = radius
+            }
+        };
+        cueball_index = add_collider(cueball);
+    }
+
     // place the balls
     int start_y = HEIGHT / 2;
     int start_x = 200;
@@ -186,29 +201,65 @@ int main(void){
     }
 
 
+    // pointing direction
+    int rad = 20;
+    int angle = 0;
+    int x = rad;
+    int y = 0; 
 
     for(;;){
-        // Bdisp_AllClr_VRAM();
-        Bdisp_Fill_VRAM(rgb565(0,180,0),3);
+        Bdisp_AllClr_VRAM();
+
+        // Bdisp_Fill_VRAM(rgb565(0,180,0),3);
 
         // draw black rectangles around the edges
-        for (int i =0; i < 2; i++)
-        {
-            draw_rectangle_filled(0,i*(HEIGHT-wall_thickness),WIDTH,wall_thickness,0);
-            draw_rectangle_filled(i*(WIDTH-wall_thickness),0,wall_thickness,HEIGHT,0);
-        }
+        // for (int i =0; i < 2; i++)
+        // {
+        //     draw_rectangle_filled(0,i*(HEIGHT-wall_thickness),WIDTH,wall_thickness,0);
+        //     draw_rectangle_filled(i*(WIDTH-wall_thickness),0,wall_thickness,HEIGHT,0);
+        // }
 
         update_objects();
         for (int i =0; i < get_colliders_size(); i++)
         {
-            draw_collider(get_collider(i));
+            // We can do this in the draw collider function or here
+            Collider *obj = get_collider(i);
+            if (obj->isDisabled) continue;
+            draw_collider(obj);
         }
-        debug_print("delta: %d", delta);
+
+        Collider *cueball = get_collider(cueball_index);
+        draw_line(cueball->x, cueball->y, cueball->x + x, cueball->y + y,0);
+
+        debug_print("x: %d, y: %d, angle: %d, sin: %.02f", x,y, angle, sini(angle));
+
         if(key_pressed(KEY_PRGM_MENU)){
             int key;
             GetKey(&key);
             break;
         }
+        else if (key_pressed(KEY_PRGM_LEFT))
+        {
+            angle-=5;
+            goto calc_new_angle;
+        }
+        else if (key_pressed(KEY_PRGM_RIGHT))
+        {
+            angle+=5;
+            calc_new_angle:
+            x = cosi(angle) * rad;
+            y = sini(angle) * rad; 
+        }
+        else if (fabs(cueball->vx) < 0.1 && fabs(cueball->vy) < 0.1 && PRGM_GetKey() == 31)
+        {
+            Vector direction = {x,y};
+            direction = normalize(direction);
+            direction = vec_multiply(direction, 2);
+
+            cueball->vx = direction.x;
+            cueball->vy = direction.y;
+        }
+
         Bdisp_PutDisp_DD();
     }
 

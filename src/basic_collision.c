@@ -14,14 +14,14 @@ void detect_basic_collision(void (* callback)(Collider *, Collider *))
     {
         Collider *obj1 = get_collider(i); 
         // skip if it's already colliding
-        if (obj1->isColliding) continue;
+        if (obj1->isColliding || obj1->isDisabled) continue;
 
         for (int j = 0; j < size; j++)
         {
-            if (i == j)
+            Collider *obj2 = get_collider(j);
+            if (i == j || obj2->isDisabled)
                 continue;
                 
-            Collider *obj2 = get_collider(j);
             if (isIntersecting(obj1,obj2))
             {
                 obj1->isColliding = true;
