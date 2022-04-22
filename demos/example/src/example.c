@@ -33,7 +33,6 @@ enum Tag {
 int points = 0;
 void callback (Collider *a, Collider *b)
 {
-    points++;
     Collider *pothole, *other;
     
     // assign pothole to the pothole and the other to the other
@@ -41,7 +40,15 @@ void callback (Collider *a, Collider *b)
 
     other = (Collider *) ((long) a - (long)pothole + (long)b);
 
-    other->isDisabled = true;
+    Vector distance = {
+        other->x - pothole->x,
+        other->y - pothole->y
+    };
+    if (sq_magnitude(distance) < pothole->collider.circle.radius* pothole->collider.circle.radius)
+    {
+        other->isDisabled = true;
+        points++; 
+    }
 }
 
 int delta;
@@ -53,11 +60,11 @@ void update_objects()
     delta = currentTime -last_tick;
     last_tick = currentTime;
 
-    float friction = 1.2e-3;
+    float friction = 1.8e-3;
     for (int i = 0; i < get_colliders_size(); i++)
     {
         Collider *object = get_collider(i);
-        if (object->physics == STATIC || object->physics == TRIGGER) continue;
+        if (object->physics == STATIC || object->physics == TRIGGER || object->isDisabled) continue;
 
         object->x += delta * object->vx;
         object->y += delta * object->vy; 
@@ -65,8 +72,8 @@ void update_objects()
         object->vx -= delta*friction*object->vx;
         object->vy -= delta*friction*object->vy;
 
-        if (fabs(object->vx) < 1e-2) object->vx = 0;
-        if (fabs(object->vy) < 1e-2) object->vx =0;
+        if (fabs(object->vx) < 5e-2) object->vx = 0;
+        if (fabs(object->vy) < 5e-2) object->vy =0;
         
 
         int radius = object->collider.circle.radius;
@@ -202,22 +209,25 @@ int main(void){
 
 
     // pointing direction
+    float strength = 1.6f;
     int rad = 20;
     int angle = 0;
     int x = rad;
     int y = 0; 
-
+    bool moving = false;
     for(;;){
         Bdisp_AllClr_VRAM();
 
         // Bdisp_Fill_VRAM(rgb565(0,180,0),3);
 
         // draw black rectangles around the edges
-        // for (int i =0; i < 2; i++)
-        // {
-        //     draw_rectangle_filled(0,i*(HEIGHT-wall_thickness),WIDTH,wall_thickness,0);
-        //     draw_rectangle_filled(i*(WIDTH-wall_thickness),0,wall_thickness,HEIGHT,0);
-        // }
+        for (int i =0; i < 2; i++)
+        {
+            draw_rectangle_filled(0,i*(HEIGHT-wall_thickness),wall_spacing,wall_thickness,0);
+            draw_rectangle_filled(WIDTH-wall_spacing,i*(HEIGHT-wall_thickness),wall_spacing,wall_thickness,0);
+            draw_rectangle_filled(i*(WIDTH-wall_thickness),0,wall_thickness,wall_spacing,0);
+            draw_rectangle_filled(i*(WIDTH-wall_thickness),HEIGHT-wall_spacing,wall_thickness,wall_spacing,0);
+        }
 
         update_objects();
         for (int i =0; i < get_colliders_size(); i++)
@@ -229,9 +239,12 @@ int main(void){
         }
 
         Collider *cueball = get_collider(cueball_index);
-        draw_line(cueball->x, cueball->y, cueball->x + x, cueball->y + y,0);
+        if (!moving && !cueball->isDisabled)
+        {
+            draw_line(cueball->x, cueball->y, cueball->x + x, cueball->y + y,0);
+        }
 
-        debug_print("x: %d, y: %d, angle: %d, sin: %.02f", x,y, angle, sini(angle));
+        debug_print("delta: %d, score: %d, rad: %d", delta, points, rad);
 
         if(key_pressed(KEY_PRGM_MENU)){
             int key;
@@ -241,23 +254,42 @@ int main(void){
         else if (key_pressed(KEY_PRGM_LEFT))
         {
             angle-=5;
-            goto calc_new_angle;
-        }
-        else if (key_pressed(KEY_PRGM_RIGHT))
-        {
-            angle+=5;
             calc_new_angle:
             x = cosi(angle) * rad;
             y = sini(angle) * rad; 
         }
-        else if (fabs(cueball->vx) < 0.1 && fabs(cueball->vy) < 0.1 && PRGM_GetKey() == 31)
+        else if (key_pressed(KEY_PRGM_RIGHT))
         {
-            Vector direction = {x,y};
-            direction = normalize(direction);
-            direction = vec_multiply(direction, 2);
+            angle+=5;
+            goto calc_new_angle;
+        }
+        else if (!moving && key_pressed(KEY_PRGM_UP))
+        {
+            float newstrength = clamp(strength + 0.2, 0.8, 2.8);
+            rad += (newstrength - strength) * 10;
+            strength = newstrength;
+            goto calc_new_angle;
+        }
+        else if(!moving && key_pressed(KEY_PRGM_DOWN))
+        {
+            float newstrength = clamp(strength - 0.2, 0.8, 2.8);
+            rad += (newstrength - strength) * 10;
+            strength = newstrength;
+            goto calc_new_angle;
+        }
+        else if (fabs(cueball->vx) < 0.1 && fabs(cueball->vy) < 0.1)
+        {
+            moving = false;
+            if (PRGM_GetKey() == 31)
+            {
+                Vector direction = {x,y};
+                direction = normalize(direction);
+                direction = vec_multiply(direction, strength);
 
-            cueball->vx = direction.x;
-            cueball->vy = direction.y;
+                cueball->vx = direction.x;
+                cueball->vy = direction.y;
+                moving = true;
+            }
         }
 
         Bdisp_PutDisp_DD();
